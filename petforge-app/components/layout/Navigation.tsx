@@ -117,12 +117,6 @@ export default function Navigation() {
               创作
             </Link>
             <Link
-              href="/community"
-              className="text-gray-300 hover:text-primary hover:text-glow font-medium transition-all text-sm uppercase tracking-wider"
-            >
-              画廊
-            </Link>
-            <Link
               href="/showcase"
               className="text-gray-300 hover:text-primary hover:text-glow font-medium transition-all text-sm uppercase tracking-wider"
             >
