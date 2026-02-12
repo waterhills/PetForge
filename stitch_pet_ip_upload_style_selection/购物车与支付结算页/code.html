@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>购物车与支付 - 宠物 AI 定制</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#8b5cf6", 
+                        "primary-dark": "#7c3aed",
+                        "primary-light": "#a78bfa",
+                        "tech-dark": "#0f0b15", 
+                        "tech-card": "#1a1625",
+                        "tech-border": "#2e293b",
+                        "surface-dark": "#18181b", 
+                        "accent-cyan": "#06b6d4",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "Noto Sans SC", "sans-serif"],
+                        "sans": ["Inter", "Noto Sans SC", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.75rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem"},
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                        'tech-grid': 'linear-gradient(to right, #2e293b 1px, transparent 1px), linear-gradient(to bottom, #2e293b 1px, transparent 1px)',
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .glass-panel {
+                @apply bg-tech-card/80 backdrop-blur-md border border-tech-border;
+            }
+            .tech-border {
+                @apply border border-tech-border;
+            }
+            .text-glow {
+                text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+            }
+        }
+        body {
+            background-color: #0f0b15;
+            background-image: radial-gradient(circle at 50% 0%, #2e1065 0%, #0f0b15 60%);
+        }::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f0b15;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4c1d95;
+        }
+    </style>
+</head>
+<body class="bg-tech-dark font-display text-gray-200 min-h-screen selection:bg-primary selection:text-white antialiased">
+<nav class="sticky top-0 z-50 w-full border-b border-tech-border bg-tech-dark/80 backdrop-blur-md">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-20">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg shadow-primary/20 ring-1 ring-white/10">
+<span class="material-symbols-outlined text-white">pets</span>
+</div>
+<span class="text-xl font-bold tracking-tight text-white">PetAI <span class="text-primary text-glow">Creator</span></span>
+</div>
+<div class="hidden md:flex items-center space-x-4 text-sm font-medium">
+<div class="flex items-center text-primary relative">
+<span class="flex items-center justify-center w-8 h-8 border-2 border-primary bg-primary/10 rounded-full shrink-0 shadow-[0_0_10px_rgba(139,92,246,0.3)]">1</span>
+<span class="ml-3 font-semibold">购物车</span>
+<div class="absolute -bottom-8 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full shadow-[0_0_8px_4px_rgba(139,92,246,0.4)]"></div>
+</div>
+<div class="w-16 h-[1px] bg-gradient-to-r from-primary to-gray-700"></div>
+<div class="flex items-center text-gray-500">
+<span class="flex items-center justify-center w-8 h-8 border border-gray-700 bg-tech-card rounded-full shrink-0">2</span>
+<span class="ml-3">确认订单</span>
+</div>
+<div class="w-16 h-[1px] bg-gray-700"></div>
+<div class="flex items-center text-gray-500">
+<span class="flex items-center justify-center w-8 h-8 border border-gray-700 bg-tech-card rounded-full shrink-0">3</span>
+<span class="ml-3">完成</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-white/5 transition-colors relative text-gray-400 hover:text-white">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-accent-cyan rounded-full shadow-[0_0_8px_rgba(6,182,212,0.8)]"></span>
+</button>
+<div class="w-10 h-10 rounded-full bg-tech-card overflow-hidden border border-tech-border hover:border-primary transition-colors cursor-pointer ring-2 ring-transparent hover:ring-primary/30">
+<img class="w-full h-full object-cover" data-alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYbn60QsTTSZkvar1P5GvXWtWqKD6swimiN3H51u7x-2O8P2SHg4HCu2EKHrt-cSr4ZsPCyEF-DV1OeNN0noHv1AR-dDff-GFVr4ZI6kJHNNJJJORb20TSEQ1kniFFECoR0LUeUk-StwuhNdJ9OpoBYfhAHQ-6povT99LONsR-KTtLpF33dqmIcA7VZmZ_ZpqOcYmONRxShOX2DeYNW0oNn2h3XOkA1wCBi94xfs-jr53sP_PJWoElYFCbVcNTEmC3WJc21vQTfu4"/>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+<div class="lg:col-span-8 space-y-6">
+<div class="flex items-center justify-between pb-4 border-b border-tech-border">
+<h1 class="text-2xl font-bold text-white flex items-center">
+<span class="material-symbols-outlined mr-2 text-primary">shopping_cart</span>
+                    购物车 <span class="text-sm font-normal text-gray-500 ml-3 bg-white/5 px-2 py-0.5 rounded-md border border-white/5">3件商品</span>
+</h1>
+<button class="text-gray-400 hover:text-primary text-sm font-medium transition-colors flex items-center gap-1 group">
+                    继续购物 <span class="group-hover:translate-x-1 transition-transform">→</span>
+</button>
+</div>
+<div class="group relative bg-tech-card/50 backdrop-blur-sm rounded-xl p-5 border border-tech-border transition-all hover:border-primary/50 hover:bg-tech-card hover:shadow-[0_0_20px_rgba(139,92,246,0.1)]">
+<div class="flex gap-6">
+<div class="relative w-36 h-36 shrink-0 rounded-lg overflow-hidden bg-black/40 border border-white/5">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="3D printed cute cat figurine close up" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvShskhJ4t-se4cjdSLFG_nMREtlKfDNqtgb2SI8EKK_LcPv0nYC9377Y04VBySD3OTZ_L8uxLmqGODtK81cmmRKVXLa3521SNxH2YLFRFuWNRZ-Z6F3Akkq7I9zkZkp1BrqtPRP6480FRUsbcWrRYUXRoc746jolY7QvR7hLMfrr_ROdunRuRYtc4cQ5uxdQebSXPEOgDPR8s2T3u4O1Yh4TxjLpPju2ZPfyx7MJDLNY9phELiXgBl-Q641_pgdNx485_Usnj49s"/>
+<div class="absolute inset-0 bg-gradient-to-t from-tech-dark/80 via-transparent to-transparent"></div>
+<span class="absolute bottom-2 left-2 text-[10px] font-bold bg-primary/90 text-white px-2 py-0.5 rounded backdrop-blur-md border border-white/10 shadow-lg">CUSTOM</span>
+</div>
+<div class="flex-1 flex flex-col justify-between py-1">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-white tracking-wide">定制 3D 打印摆件 - 树脂版</h3>
+<button class="text-gray-500 hover:text-red-400 transition-colors p-1 rounded-md hover:bg-white/5">
+<span class="material-icons text-xl">delete_outline</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded border border-white/5">IP: 嘟嘟 (Golden Retriever)</span>
+<span class="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded border border-white/5">尺寸: 15cm 高精细度</span>
+</div>
+</div>
+<div class="flex justify-between items-end mt-4">
+<div class="flex items-center bg-black/40 rounded-lg p-1 border border-white/10">
+<button class="w-7 h-7 rounded-md bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all">
+<span class="material-icons text-sm">remove</span>
+</button>
+<span class="w-10 text-center font-mono text-sm text-gray-200">1</span>
+<button class="w-7 h-7 rounded-md bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all">
+<span class="material-icons text-sm">add</span>
+</button>
+</div>
+<div class="text-right">
+<span class="block text-xl font-bold text-white font-mono tracking-tight">¥399.00</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="group relative bg-tech-card/50 backdrop-blur-sm rounded-xl p-5 border border-tech-border transition-all hover:border-primary/50 hover:bg-tech-card hover:shadow-[0_0_20px_rgba(139,92,246,0.1)]">
+<div class="flex gap-6">
+<div class="relative w-36 h-36 shrink-0 rounded-lg overflow-hidden bg-black/40 border border-white/5">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Phone case with custom pet art" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1h-WXnzY2kPPnPmckD67C5fB_SjmEMBvqtdOWT9ph2WHn1FUDQSt4DpNL7NvKnPdsgDjtt2_5DnA5hIkc7KCjM_MMKO91fkasHidNuogqeON4XQsWLew2hI5p0f9TB6WvhChb5nRJ1yCcYUqseXEfBRcIDENPpgajHwQC8uGdSWy0hDAQEMxDFyXUUO7OYuK-iPJwStPwy3I-Ol-XdI6bXUczB4Sv4cqKMU3WugwAvOlj67OYoEg4E1GvoWS2Ey6UaRj9fmCPRe8"/>
+</div>
+<div class="flex-1 flex flex-col justify-between py-1">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-white tracking-wide">定制宠物手机壳 (防摔气囊款)</h3>
+<button class="text-gray-500 hover:text-red-400 transition-colors p-1 rounded-md hover:bg-white/5">
+<span class="material-icons text-xl">delete_outline</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded border border-white/5">型号: iPhone 15 Pro Max</span>
+<span class="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded border border-white/5">材质: 磨砂软胶</span>
+</div>
+</div>
+<div class="flex justify-between items-end mt-4">
+<div class="flex items-center bg-black/40 rounded-lg p-1 border border-white/10">
+<button class="w-7 h-7 rounded-md bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all">
+<span class="material-icons text-sm">remove</span>
+</button>
+<span class="w-10 text-center font-mono text-sm text-gray-200">2</span>
+<button class="w-7 h-7 rounded-md bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all">
+<span class="material-icons text-sm">add</span>
+</button>
+</div>
+<div class="text-right">
+<span class="block text-xl font-bold text-white font-mono tracking-tight">¥178.00</span>
+<span class="text-xs text-gray-500 line-through mr-1">¥198.00</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="group relative bg-tech-card/30 backdrop-blur-sm rounded-xl p-5 border border-tech-border transition-all hover:border-primary/50 hover:bg-tech-card">
+<div class="flex gap-6">
+<div class="relative w-36 h-36 shrink-0 rounded-lg overflow-hidden bg-black/40 border border-primary/30">
+<div class="absolute inset-0 flex items-center justify-center bg-primary/10 z-10 backdrop-blur-[2px]">
+<span class="material-symbols-outlined text-4xl text-primary drop-shadow-[0_0_10px_rgba(139,92,246,0.8)]">download</span>
+</div>
+<img class="w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="Digital abstract colorful gradient representing NFT" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjScoCvpbDxTt1oDomEIs7RyxaRd3RrQPLjwHFJbF6ch5gTpHQRG4a5Oc-1L6HpCN4SaKD0mCd5W7xhlccNKDWgcXj4quTj5U92L_cYB61BjDrfL_v72y4NLglQZ0tuMg5-HUFZKbXc_0k3PtSkz2icodRE3Fdu_fzUvt7upyTHFgC8swpOOxq6MGia4ZzxQvrfHdFrOgs5LbQGbsmB3i1ysfGnhYGQuTGNpP5ifgzTyYp4g4DV2wDNyXOKx-kPmz5p79ZAlxqtAo"/>
+</div>
+<div class="flex-1 flex flex-col justify-between py-1">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-gray-200 group-hover:text-white transition-colors">AI 生成头像套图 (高清原图)</h3>
+<button class="text-gray-500 hover:text-red-400 transition-colors p-1 rounded-md hover:bg-white/5">
+<span class="material-icons text-xl">delete_outline</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-2 mt-2 items-center">
+<span class="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded border border-white/5">JPG, PNG (4K)</span>
+<span class="inline-flex items-center px-2 py-0.5 bg-accent-cyan/10 text-accent-cyan text-[10px] font-bold uppercase rounded border border-accent-cyan/20 tracking-wider">
+<span class="w-1.5 h-1.5 bg-accent-cyan rounded-full mr-1.5 animate-pulse"></span>Digital
+                                </span>
+</div>
+</div>
+<div class="flex justify-between items-end mt-4">
+<div class="text-xs text-gray-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">bolt</span> 支付后自动发货
+                            </div>
+<div class="text-right">
+<span class="block text-xl font-bold text-accent-cyan font-mono">¥0.00</span>
+<span class="text-xs text-gray-500 uppercase tracking-widest">Gift</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-8 mt-8 border-t border-tech-border">
+<h4 class="text-lg font-bold mb-4 flex items-center text-white">
+<span class="material-symbols-outlined mr-2 text-primary">auto_awesome</span> 
+                    猜你喜欢
+                </h4>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="bg-tech-card/50 p-3 rounded-lg border border-transparent hover:border-primary/50 hover:bg-tech-card transition-all cursor-pointer group">
+<div class="aspect-square rounded-md bg-black/40 mb-3 overflow-hidden border border-white/5">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Dog bandana accessory" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrixdKwBcThkW-2vitGzSIGPZO3nB720-w2gMvWUjIgCmdD-cuNUUIESNZiI3n3Vf2JZAS6rcKP5J2dhisZmqEA1sjctslBVJL1VQfmsIDd1aAu7HOIDqH_Cdkp--uVfO26czMyB4sZRRE_H2L9o8wviRMccXtzVTihV9rtnOKaa1SFZl8UY21A7t5xmRg7-grmjvIPgFp4dpU_jKXgPMgkPcpx-g9-Ve755bUHhHiBVR8TaJeWq-5lNtEH3Q1QCWrRSBNUq3H8tg"/>
+</div>
+<p class="text-sm font-medium text-gray-300 group-hover:text-white truncate">定制宠物围巾</p>
+<p class="text-xs text-primary font-bold mt-1 font-mono">¥49.00</p>
+</div>
+<div class="bg-tech-card/50 p-3 rounded-lg border border-transparent hover:border-primary/50 hover:bg-tech-card transition-all cursor-pointer group">
+<div class="aspect-square rounded-md bg-black/40 mb-3 overflow-hidden border border-white/5">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Pet bowl ceramic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVxkkTtT4kVpih69HQZaveATEnJySHm9sKURgh2EgdlvGLxLAeg1urODbDWfBxLQI_6KoepKStIJXLSBARuJHXU5BMOqoTtyVRndY_bJOFkVNzDyp-bVnXLonZVPWkcxESbVbDiV_9gDOxbWe1wAtO6THhJqvdRftERz5IU4ZCaXXyK8MlhAZEAMqSzswW7JCiubRQ6ytHP2PwtV-aQRjBKbxKo_Jmj54CS0RcX6byAklwZ1jUzAwuWWencZKUV5fkx5J9jbuxSfc"/>
+</div>
+<p class="text-sm font-medium text-gray-300 group-hover:text-white truncate">陶瓷宠物食盆</p>
+<p class="text-xs text-primary font-bold mt-1 font-mono">¥89.00</p>
+</div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-4">
+<div class="sticky top-24 space-y-6">
+<div class="bg-tech-card/80 backdrop-blur-xl rounded-xl p-6 shadow-2xl border border-tech-border relative overflow-hidden group">
+<div class="absolute -top-20 -right-20 w-40 h-40 bg-primary/20 blur-[60px] rounded-full pointer-events-none group-hover:bg-primary/30 transition-colors duration-700"></div>
+<div class="absolute -bottom-20 -left-20 w-40 h-40 bg-accent-cyan/10 blur-[60px] rounded-full pointer-events-none"></div>
+<h2 class="text-lg font-bold mb-6 text-white tracking-wide border-l-4 border-primary pl-3">订单汇总</h2>
+<div class="space-y-4 text-sm relative z-10">
+<div class="flex justify-between text-gray-400">
+<span>商品小计</span>
+<span class="text-gray-200 font-mono">¥577.00</span>
+</div>
+<div class="flex justify-between text-gray-400">
+<span>运费</span>
+<span class="text-accent-cyan font-medium">免运费</span>
+</div>
+<div class="flex justify-between text-gray-400">
+<span>会员折扣</span>
+<span class="text-primary font-mono">-¥20.00</span>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-dashed border-white/10 relative z-10">
+<div class="flex gap-2">
+<div class="relative flex-1">
+<input class="w-full bg-black/30 border border-white/10 rounded-lg text-sm px-4 py-2.5 text-white placeholder-gray-600 focus:ring-1 focus:ring-primary focus:border-primary transition-all" placeholder="输入优惠码" type="text"/>
+</div>
+<button class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 text-sm font-medium rounded-lg transition-colors">
+                                应用
+                            </button>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-white/10 relative z-10">
+<div class="flex justify-between items-end">
+<span class="text-base font-medium text-gray-400">总计</span>
+<span class="text-3xl font-bold text-white font-mono tracking-tight">¥557.00</span>
+</div>
+<p class="text-right text-xs text-gray-500 mt-2 font-mono">包含增值税</p>
+</div>
+</div>
+<div class="bg-tech-card/80 backdrop-blur-xl rounded-xl p-6 shadow-xl border border-tech-border">
+<h2 class="text-lg font-bold mb-4 text-white tracking-wide border-l-4 border-primary pl-3">支付方式</h2>
+<div class="space-y-3">
+<label class="relative flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-all hover:bg-white/5 group border-primary/50 bg-primary/10 shadow-[inset_0_0_10px_rgba(139,92,246,0.1)]">
+<div class="flex items-center gap-3">
+<div class="relative flex items-center justify-center w-5 h-5">
+<input checked="" class="peer appearance-none w-5 h-5 border border-gray-500 rounded-full checked:border-primary checked:bg-primary transition-all" name="payment" type="radio"/>
+<div class="absolute w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-[#2AAD67] flex items-center justify-center shadow-lg shadow-[#2AAD67]/20">
+<svg class="w-5 h-5 text-white fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.5,12.5c4.7,0,8.5-3.4,8.5-7.5S13.2,0,8.5,0S0,3.4,0,7.5c0,2.2,1.1,4.2,2.8,5.6c0,0-0.3,1.6-0.5,2c0.7,0,2.6-0.4,3.3-1C6.5,14.6,7.5,15,8.5,12.5z M20,16.5c2.2,0,4-1.8,4-4c0-2.2-1.8-4-4-4c-2.2,0-4,1.8-4,4C16,14.7,17.8,16.5,20,16.5z"></path></svg> 
+</div>
+<span class="font-medium text-white">微信支付</span>
+</div>
+</div>
+<span class="material-icons text-primary opacity-100 transition-opacity drop-shadow-[0_0_5px_rgba(139,92,246,0.8)]">check_circle</span>
+</label>
+<label class="relative flex items-center justify-between p-4 border border-white/10 rounded-xl cursor-pointer transition-all hover:border-white/30 hover:bg-white/5 group">
+<div class="flex items-center gap-3">
+<div class="relative flex items-center justify-center w-5 h-5">
+<input class="peer appearance-none w-5 h-5 border border-gray-600 rounded-full checked:border-primary checked:bg-primary transition-all" name="payment" type="radio"/>
+<div class="absolute w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-[#1678FF] flex items-center justify-center shadow-lg shadow-[#1678FF]/20">
+<span class="material-icons text-white text-sm">account_balance_wallet</span>
+</div>
+<span class="font-medium text-gray-300 group-hover:text-white transition-colors">支付宝</span>
+</div>
+</div>
+</label>
+<label class="relative flex items-center justify-between p-4 border border-white/10 rounded-xl cursor-pointer transition-all hover:border-white/30 hover:bg-white/5 group">
+<div class="flex items-center gap-3">
+<div class="relative flex items-center justify-center w-5 h-5">
+<input class="peer appearance-none w-5 h-5 border border-gray-600 rounded-full checked:border-primary checked:bg-primary transition-all" name="payment" type="radio"/>
+<div class="absolute w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center shadow-lg shadow-orange-600/20">
+<span class="material-icons text-white text-sm">credit_card</span>
+</div>
+<span class="font-medium text-gray-300 group-hover:text-white transition-colors">信用卡</span>
+</div>
+</div>
+<div class="flex -space-x-2 opacity-50 group-hover:opacity-100 transition-opacity">
+<div class="w-6 h-4 bg-gray-600 rounded overflow-hidden border border-white/10"></div>
+<div class="w-6 h-4 bg-gray-500 rounded overflow-hidden border border-white/10"></div>
+</div>
+</label>
+</div>
+</div>
+<button class="w-full relative overflow-hidden bg-primary hover:bg-primary-dark text-white font-bold py-4 px-6 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.4)] transform transition hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 text-lg group">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+<span class="material-icons text-xl group-hover:scale-110 transition-transform">lock</span>
+<span class="tracking-wide">立即支付 ¥557.00</span>
+</button>
+<div class="flex items-center justify-center gap-2 text-xs text-gray-500">
+<span class="material-symbols-outlined text-sm text-primary">verified_user</span>
+<span>SSL 加密安全支付保障</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="border-t border-tech-border mt-12 bg-black/40 backdrop-blur-sm">
+<div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+<div class="flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="text-sm text-gray-500">
+                © 2023 PetAI Creator. 保留所有权利.
+            </div>
+<div class="flex space-x-6 text-sm text-gray-500">
+<a class="hover:text-primary transition-colors" href="#">隐私政策</a>
+<a class="hover:text-primary transition-colors" href="#">服务条款</a>
+<a class="hover:text-primary transition-colors" href="#">退换货政策</a>
+</div>
+</div>
+</div>
+</footer>
+
+</body></html>

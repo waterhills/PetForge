@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>照片上传与风格选择 (深色科技版) - 宠爱 AI</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+            extend: {
+                colors: {
+                    "primary": "#a855f7","primary-dark": "#7e22ce",
+                    "background-main": "#0f0f13","surface-card": "#18181b","surface-hover": "#27272a",
+                    "neon-purple": "#d946ef",
+                    "neon-blue": "#3b82f6",
+                },
+                fontFamily: {
+                    "display": ["Space Grotesk", "Noto Sans SC", "sans-serif"],
+                    "sans": ["Noto Sans SC", "sans-serif"]
+                },
+                boxShadow: {
+                    'neon': '0 0 5px theme("colors.primary"), 0 0 20px theme("colors.primary")',
+                    'neon-hover': '0 0 10px theme("colors.neon-purple"), 0 0 40px theme("colors.neon-purple")',
+                    'card-glow': '0 0 20px rgba(168, 85, 247, 0.15)',
+                },
+                backgroundImage: {
+                    'tech-grid': "radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)",
+                }
+            },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0f0f13;
+            background-image: radial-gradient(at 0% 0%, rgba(56, 11, 89, 0.15) 0px, transparent 50%),
+                            radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.3) 0px, transparent 50%);
+        }::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #18181b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3f3f46; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a855f7; 
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #e9d5ff, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+        }
+        .upload-zone-border {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='%23A855F7FF' stroke-width='2' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+            transition: all 0.3s ease;
+        }
+        .upload-zone:hover .upload-zone-border {
+             background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='%23D946EFFF' stroke-width='3' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+             box-shadow: 0 0 25px rgba(217, 70, 239, 0.2), inset 0 0 20px rgba(217, 70, 239, 0.1);
+        }
+        .style-card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px -10px rgba(168, 85, 247, 0.4);
+            border-color: rgba(168, 85, 247, 0.5);
+        }
+    </style>
+</head>
+<body class="text-gray-100 font-sans min-h-screen flex flex-col selection:bg-primary selection:text-white overflow-x-hidden">
+<div class="fixed inset-0 z-0 pointer-events-none opacity-20 bg-[size:24px_24px] bg-tech-grid"></div>
+<nav class="w-full py-5 px-6 lg:px-10 flex justify-between items-center z-20 relative border-b border-white/5 bg-background-main/80 backdrop-blur-md">
+<div class="flex items-center gap-3 group cursor-pointer">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary-dark to-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-all">
+<span class="material-icons-round text-2xl">smart_toy</span>
+</div>
+<span class="text-xl font-bold tracking-tight text-white group-hover:text-primary transition-colors">PetAI <span class="font-light opacity-70">Lab</span></span>
+</div>
+<div class="hidden md:flex items-center gap-2 bg-[#1c1c21] px-6 py-2.5 rounded-full border border-white/5 shadow-inner">
+<div class="flex items-center gap-2 text-primary font-medium">
+<div class="w-6 h-6 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center text-xs shadow-[0_0_10px_rgba(168,85,247,0.3)]">1</div>
+<span class="text-sm">上传照片</span>
+</div>
+<div class="w-8 h-[1px] bg-white/10"></div>
+<div class="flex items-center gap-2 text-gray-500 group hover:text-gray-300 transition-colors cursor-default">
+<div class="w-6 h-6 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-xs group-hover:border-white/20">2</div>
+<span class="text-sm">生成预览</span>
+</div>
+<div class="w-8 h-[1px] bg-white/10"></div>
+<div class="flex items-center gap-2 text-gray-500 group hover:text-gray-300 transition-colors cursor-default">
+<div class="w-6 h-6 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-xs group-hover:border-white/20">3</div>
+<span class="text-sm">定制周边</span>
+</div>
+</div>
+<button class="flex items-center gap-3 px-1 py-1 pr-4 rounded-full border border-white/5 bg-white/5 hover:bg-white/10 transition-all hover:border-white/10 group">
+<div class="w-9 h-9 rounded-full overflow-hidden bg-gray-700 relative ring-2 ring-transparent group-hover:ring-primary/50 transition-all">
+<img alt="User Avatar" class="object-cover w-full h-full" data-alt="User profile picture thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnNHeZ9YbWa9IR92jPAMx_K1Ajl7Og0pKveLlRE4nRwsQi0B3JBLp01j4soUbZT58bm_YD3C-ZrPhXo2lHxFnMXOeBuNHtrfN8O9n7EclmW5VHYg91dtbArkPsk16Y4r8kvbspNc-Ynod9APIlYU8j2IQoQI22AfJnPfPx6-NQEb_-CLuNJ28Mcv0F7s6NmRDMX3wYlMHHV26dBm5oiqworb1hXe089pAtftFXuaFG7khUsC3iw1lAZA8gG3XAMebcw1E14AcGJmU"/>
+</div>
+<span class="hidden sm:block text-sm font-medium text-gray-300 group-hover:text-white">我的账户</span>
+</button>
+</nav>
+<main class="flex-grow flex flex-col lg:flex-row gap-6 px-4 lg:px-10 pb-8 pt-6 max-w-[1800px] mx-auto w-full h-full relative z-10">
+<div class="w-full lg:w-7/12 flex flex-col h-full lg:min-h-[600px]">
+<div class="mb-6 pl-2">
+<h1 class="text-3xl lg:text-5xl font-bold mb-3 gradient-text tracking-tight">定制你的爱宠 IP</h1>
+<p class="text-gray-400 text-lg font-light tracking-wide">上传照片，AI 引擎一键生成独一无二的赛博 3D 形象</p>
+</div>
+<div class="flex-grow relative group upload-zone cursor-pointer transition-all duration-300 rounded-2xl bg-[#131316]">
+<div class="absolute inset-0 bg-primary/5 rounded-2xl blur-xl group-hover:bg-primary/10 transition-colors duration-500"></div>
+<label class="relative flex flex-col items-center justify-center w-full h-full min-h-[450px] rounded-2xl upload-zone-border transition-all duration-300 p-8 text-center overflow-hidden" for="file-upload">
+<div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
+<div class="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
+<div class="absolute bottom-1/4 right-1/4 w-40 h-40 bg-neon-blue/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+</div>
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-28 h-28 rounded-full bg-[#1c1c21] border border-white/5 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] group-hover:border-primary/50 transition-all duration-300 shadow-2xl">
+<span class="material-icons-round text-6xl text-gray-400 group-hover:text-primary transition-colors">add_a_photo</span>
+</div>
+<h3 class="text-2xl font-bold mb-3 text-white group-hover:text-primary-300 transition-colors tracking-wide">点击上传爱宠照片</h3>
+<p class="text-gray-500 mb-8 max-w-md group-hover:text-gray-400 transition-colors">支持 JPG, PNG 格式。为了 AI 最佳识别效果，请确保光线充足，五官清晰可见。</p>
+<div class="flex items-center gap-4">
+<div class="px-4 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs text-gray-500 flex items-center gap-1 group-hover:bg-primary/10 group-hover:text-primary-200 group-hover:border-primary/20 transition-all">
+<span class="material-icons-round text-sm">attach_file</span> 最大 10MB
+                        </div>
+<div class="px-4 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs text-gray-500 flex items-center gap-1 group-hover:bg-primary/10 group-hover:text-primary-200 group-hover:border-primary/20 transition-all">
+<span class="material-icons-round text-sm">auto_fix_high</span> 自动抠图
+                        </div>
+</div>
+</div>
+<input accept="image/*" class="hidden" id="file-upload" type="file"/>
+</label>
+</div>
+<div class="mt-6 flex gap-4 overflow-x-auto pb-4 items-center pl-2">
+<div class="text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap self-center mr-2">优秀示例</div>
+<div class="flex gap-3">
+<div class="group/img relative w-16 h-16 rounded-lg overflow-hidden border border-white/10 hover:border-primary/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all cursor-pointer">
+<img alt="Dog portrait" class="w-full h-full object-cover opacity-70 group-hover/img:opacity-100 transition-opacity" data-alt="Clear front-facing dog photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvwZiCRLxTyJfIrv41rOypCgnatpumg9V9LRAv66iUd7RfeLPBmPatuYEJ_rL2kKVak1EdY9c9BdZXZsqkk5NofCE0476VIRlhLwcYnpkw7O2q9xlNXpm2kKDp1rhTJvqKyEG_czdZSfNBTOtvAfwwbpO86MGBupAq1Uf5mVHPwElDDhJ6HymyILK_RgfJx0GOfVHpSJlLb8ZkQdR0EHhdLDDSRAQ7IZ6c4J7miOI6AbzSkBrt0lc2uXHZDDtZVtxvioyE8KOqRDM"/>
+</div>
+<div class="group/img relative w-16 h-16 rounded-lg overflow-hidden border border-white/10 hover:border-primary/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all cursor-pointer">
+<img alt="Cat portrait" class="w-full h-full object-cover opacity-70 group-hover/img:opacity-100 transition-opacity" data-alt="Close up cat face photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWvWrTPk4xwYt984PNfNMHCGPSbpFNAQC1S9Qh9PzDRrr6a6OzhVgdearnRzfSZHL-DM_duXx2q9BxC803RWS9UNuZkBAEjvsp2kybaBaF6lgb1nvshODgJPElk_0zg7nRSiD2tm5mAzEmJ1l37xqFYj8YIgqc_c2mq-lKhm5W38QyPtOuPoTFNGyA70erQSwoVM8KKkemxSVDGfeMxpp1-idSdnazZ0PGqtyHn9KRBOOmAIbcUdRdYcrN90nQKFwt5tr80e9ae3o"/>
+</div>
+<div class="group/img relative w-16 h-16 rounded-lg overflow-hidden border border-white/10 hover:border-primary/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all cursor-pointer">
+<img alt="Dog happy" class="w-full h-full object-cover opacity-70 group-hover/img:opacity-100 transition-opacity" data-alt="Well lit happy dog photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAm6-K-Vu2lJILEOwOKlirqqQe7zslmTFpPBkmHfvOTRqkrbVqeSE8VDJANKl8nhvCssIHH8bwaJn9A7tScV8XdSwgtXiNMUfkAZvw9zuLaaOyecS-GHslAm7FP7IRk9UyAtcfIKfYEMRbKwFLZgWw7rdZ4d2lTHJb_iSWaSg4Tbb4xCX22nvFN1pmiC6GK-2hamVVc3Vv5sgWjV_8o32BzgwkH3DYs5NtS8-En6MWqT3ricRQTDK3tvcNlyMg2ihc9zdF2_In9v5w"/>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full lg:w-5/12 flex flex-col">
+<div class="bg-surface-card rounded-2xl p-6 lg:p-8 h-full border border-white/5 shadow-2xl relative overflow-hidden flex flex-col">
+<div class="absolute -top-32 -right-32 w-80 h-80 bg-primary/5 rounded-full blur-[80px] pointer-events-none"></div>
+<div class="absolute top-1/2 -left-20 w-40 h-40 bg-blue-600/5 rounded-full blur-[60px] pointer-events-none"></div>
+<div class="flex justify-between items-end mb-6 relative z-10">
+<div>
+<h2 class="text-2xl font-bold text-white tracking-tight">选择生成风格</h2>
+<p class="text-xs text-gray-500 mt-1">选择一种 AI 艺术风格以开始转换</p>
+</div>
+<button class="text-xs text-primary hover:text-white font-medium cursor-pointer transition-colors border border-primary/20 hover:border-primary/50 hover:bg-primary/10 rounded-full px-3 py-1">
+                    全部风格
+                </button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10 flex-grow overflow-y-auto pr-2 custom-scrollbar">
+<div class="group relative cursor-pointer style-card-hover transition-all duration-300">
+<input checked="" class="peer hidden" id="style-pixar" name="style" type="radio"/>
+<label class="block bg-[#222226] border border-white/5 rounded-xl overflow-hidden transition-all duration-300 peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary peer-checked:shadow-[0_0_20px_rgba(168,85,247,0.2)] h-full" for="style-pixar">
+<div class="h-32 w-full bg-gray-900 relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-t from-[#222226] via-transparent to-transparent z-10"></div>
+<img alt="3D Cartoon Style" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Bright 3D cartoon character rendering" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1Sa8qqFmL0M66DCtFnIEqEn8VgR9go5iUeFye7xfD0xoA6i_lrwoD2kz6ApKEcv-SqFgdfM3WVF8EKj3IQSZzkKQm3AXTDMrX_O9r9wyJ75KZhf332CDQQzNRes30YyuPqtXjyLP9q2AorxJRpNk87oB3eHf_eMEONhAKXEDOOMLhjedCqImRAPfrJ-JSBSzcz_wRkjBIH8sSNZBsvCksoQo8uiZhrO8fUNOpo1WI3LSFmxLbNuAxozOoN_2Z28sNL00-mXgY1Jw"/>
+<div class="absolute top-3 right-3 z-20 opacity-0 peer-checked:opacity-100 transition-opacity">
+<div class="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/40">
+<span class="material-icons-round text-sm">check</span>
+</div>
+</div>
+</div>
+<div class="p-4 relative">
+<div class="absolute -top-4 left-3 bg-[#222226] p-1 rounded-lg border border-white/5 z-20">
+<span class="material-icons-round text-primary text-lg">movie_filter</span>
+</div>
+<h3 class="font-bold text-white mt-2 group-hover:text-primary transition-colors">皮克斯 3D</h3>
+<p class="text-xs text-gray-500 mt-1 leading-relaxed">生动活泼的主角光环，细节丰富，质感细腻。</p>
+</div>
+</label>
+</div>
+<div class="group relative cursor-pointer style-card-hover transition-all duration-300">
+<input class="peer hidden" id="style-clay" name="style" type="radio"/>
+<label class="block bg-[#222226] border border-white/5 rounded-xl overflow-hidden transition-all duration-300 peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary peer-checked:shadow-[0_0_20px_rgba(168,85,247,0.2)] h-full" for="style-clay">
+<div class="h-32 w-full bg-gray-900 relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-t from-[#222226] via-transparent to-transparent z-10"></div>
+<img alt="Clay Texture Art" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Soft colorful polymer clay sculpture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhOEonJyjMgn5ZMDofXY8R8Lm5Z6LbOvaUeQllzDpcDSxWF31wovApu3h3Jyd4t1YPVZNtV83kHvKoywfgw-RZId-CXwO8XHnKEHlbrNL5nCqFafUGPC4VRvhnTs1TJ0wuxdbbA96i-4-ccIJL5sf44Kb3Qw7w_auxyShOLSUlzprxr6C6pCCzjmgV5zdX4q6u5dQEYgodfNTLv756QwAwwh12xAMIJ9yJokp8z9UwES2VnRg7cI39ACrqRZCpsmb1m4jAvR8v7ss"/>
+<div class="absolute top-3 right-3 z-20 opacity-0 peer-checked:opacity-100 transition-opacity">
+<div class="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/40">
+<span class="material-icons-round text-sm">check</span>
+</div>
+</div>
+</div>
+<div class="p-4 relative">
+<div class="absolute -top-4 left-3 bg-[#222226] p-1 rounded-lg border border-white/5 z-20">
+<span class="material-icons-round text-orange-400 text-lg">palette</span>
+</div>
+<h3 class="font-bold text-white mt-2 group-hover:text-primary transition-colors">粘土世界</h3>
+<p class="text-xs text-gray-500 mt-1 leading-relaxed">软糯可爱的定格动画风格，充满手工温度。</p>
+</div>
+</label>
+</div>
+<div class="group relative cursor-pointer style-card-hover transition-all duration-300">
+<input class="peer hidden" id="style-cyber" name="style" type="radio"/>
+<label class="block bg-[#222226] border border-white/5 rounded-xl overflow-hidden transition-all duration-300 peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary peer-checked:shadow-[0_0_20px_rgba(168,85,247,0.2)] h-full" for="style-cyber">
+<div class="h-32 w-full bg-gray-900 relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-t from-[#222226] via-transparent to-transparent z-10"></div>
+<img alt="Cyberpunk Neon" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Futuristic neon glowing cyber animal" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRh308zlJaHuXA8Uq64LC_rcZ-rfnxBqoKqCgzT3tZ9euRmUR6JRabWcdrGRlEhuLZ6zBGYEdYMN0-4NP2sGam5IeOhs1v-7zIqrjcmiShNpXUNxqU-Q0lVukatoUUAYwOWvjwLkKkWvlrOKiwCpBVFetshlgfzTMG1rCz3fOXOxVj3WoeUC_DBCdpSj8RMBXtB2JwfU7myR_Jflf5mIguQXkDhIg3jfFIvxGOyVGP_GVgb-JklPRqHrV6n8CB9NMcVrfF2XVpN2Q"/>
+<div class="absolute top-3 right-3 z-20 opacity-0 peer-checked:opacity-100 transition-opacity">
+<div class="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/40">
+<span class="material-icons-round text-sm">check</span>
+</div>
+</div>
+</div>
+<div class="p-4 relative">
+<div class="absolute -top-4 left-3 bg-[#222226] p-1 rounded-lg border border-white/5 z-20">
+<span class="material-icons-round text-blue-400 text-lg">bolt</span>
+</div>
+<h3 class="font-bold text-white mt-2 group-hover:text-primary transition-colors">赛博萌宠</h3>
+<p class="text-xs text-gray-500 mt-1 leading-relaxed">霓虹光效与机械质感的未来派结合。</p>
+</div>
+</label>
+</div>
+<div class="group relative cursor-pointer style-card-hover transition-all duration-300">
+<input class="peer hidden" id="style-line" name="style" type="radio"/>
+<label class="block bg-[#222226] border border-white/5 rounded-xl overflow-hidden transition-all duration-300 peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary peer-checked:shadow-[0_0_20px_rgba(168,85,247,0.2)] h-full" for="style-line">
+<div class="h-32 w-full bg-gray-900 relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-t from-[#222226] via-transparent to-transparent z-10"></div>
+<img alt="Minimal Line Art" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Black and white minimalist abstract lines" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9BAmu55ppPMoqZqsdKsTvSGpMAO4yFRAORLZN2q_YB_sTJaQKxl4ahkCYVmPvFkYb6VD8EgnnQqm9JHrliVS0pBxcTLxbuiEq9nfEpwcx-mMLIAx3f4c0816hvTgGRi50kRDvp4wWTO5h7FINB4D4AteJ9W7_AgcFd1lkk0TWMkEIvFZDxWd0pjpZX3p2NA4Auu_2JKik11kyTzHd3dBlfjbuG7z7uqyqZr-23_GtCxYA-y1JMl_gwH8j-RcLJKcsweZ2WVlhPdM"/>
+<div class="absolute top-3 right-3 z-20 opacity-0 peer-checked:opacity-100 transition-opacity">
+<div class="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/40">
+<span class="material-icons-round text-sm">check</span>
+</div>
+</div>
+</div>
+<div class="p-4 relative">
+<div class="absolute -top-4 left-3 bg-[#222226] p-1 rounded-lg border border-white/5 z-20">
+<span class="material-icons-round text-gray-400 text-lg">gesture</span>
+</div>
+<h3 class="font-bold text-white mt-2 group-hover:text-primary transition-colors">极简线条</h3>
+<p class="text-xs text-gray-500 mt-1 leading-relaxed">高雅的艺术线条，适合印制 T 恤和帆布袋。</p>
+</div>
+</label>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-white/5 z-20">
+<button class="w-full bg-gradient-to-r from-primary-dark to-primary hover:from-primary hover:to-primary-light text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(140,43,238,0.3)] hover:shadow-[0_0_35px_rgba(140,43,238,0.5)] transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 text-lg border border-white/10 group">
+<span class="material-icons-round animate-pulse">auto_awesome</span>
+<span class="tracking-widest">开始生成</span>
+<span class="material-icons-round opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">arrow_forward</span>
+</button>
+<div class="flex justify-between items-center mt-3 px-1">
+<div class="flex items-center gap-1.5 text-xs text-gray-400">
+<span class="material-icons-round text-primary text-sm">token</span> 消耗 5 点数
+</div>
+<div class="flex items-center gap-1.5 text-xs text-gray-400">
+<span class="material-icons-round text-sm">timer</span> 预计 15 秒
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+</body></html>

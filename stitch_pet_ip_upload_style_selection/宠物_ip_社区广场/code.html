@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>宠物 IP 社区广场 (深色科技版) - Pet IP Community</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tech-dark": "#0B0C15",     // Deep background
+              "tech-card": "#151621",     // Card background
+              "tech-border": "#2A2B3C",   // Border color
+              "primary": "#8B5CF6",       // Purple accent (Tech feel)
+              "primary-glow": "#A78BFA",  // Lighter purple for glow
+              "secondary": "#1E1F2E",     // Secondary dark
+              "accent-cyan": "#06B6D4",   // Cyan accent for tech highlights
+            },
+            fontFamily: {
+              "sans": ["Noto Sans SC", "sans-serif"],
+              "display": ["Noto Sans SC", "sans-serif"],
+            },
+            borderRadius: {
+              "DEFAULT": "0.5rem", 
+              "lg": "1rem", 
+              "xl": "1.5rem", 
+              "2xl": "2rem",
+              "full": "9999px"
+            },
+            boxShadow: {
+              'tech': '0 4px 20px -5px rgba(0, 0, 0, 0.5)',
+              'tech-hover': '0 10px 40px -10px rgba(139, 92, 246, 0.15), 0 0 20px -5px rgba(6, 182, 212, 0.1)',
+              'glow': '0 0 15px rgba(139, 92, 246, 0.5)',
+            },
+            animation: {
+              'pulse-glow': 'pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            },
+            keyframes: {
+              'pulse-glow': {
+                '0%, 100%': { boxShadow: '0 0 10px rgba(139, 92, 246, 0.3)' },
+                '50%': { boxShadow: '0 0 20px rgba(139, 92, 246, 0.7)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #0B0C15;
+            color: #E2E8F0;
+        }.masonry-grid {
+            column-count: 1;
+            column-gap: 1.5rem;
+        }
+        @media (min-width: 640px) {
+            .masonry-grid { column-count: 2; }
+        }
+        @media (min-width: 1024px) {
+            .masonry-grid { column-count: 3; }
+        }
+        @media (min-width: 1280px) {
+            .masonry-grid { column-count: 4; }
+        }
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 1.5rem;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-tech-dark text-slate-200 font-sans antialiased selection:bg-primary selection:text-white">
+<nav class="sticky top-0 z-50 bg-tech-dark/90 backdrop-blur-xl border-b border-tech-border">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between items-center h-20">
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="w-10 h-10 bg-gradient-to-br from-primary to-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-all duration-300">
+<span class="material-icons-round text-2xl">smart_toy</span>
+</div>
+<span class="text-xl font-bold tracking-tight text-white">Pet<span class="text-primary-glow">AI</span> <span class="text-slate-400 font-normal text-sm ml-1">IP LAB</span></span>
+</div>
+<div class="hidden md:flex flex-1 max-w-lg mx-8">
+<div class="relative w-full group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-icons-round text-slate-500 group-focus-within:text-primary transition-colors">search</span>
+</div>
+<input class="block w-full pl-11 pr-4 py-2.5 bg-secondary border border-tech-border rounded-full text-sm text-slate-200 focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:bg-tech-card transition-all placeholder-slate-500" placeholder="搜索赛博萌宠、3D资产或创作者..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-secondary hover:bg-tech-border border border-tech-border hover:border-slate-600 text-slate-300 hover:text-white rounded-full transition-all text-sm font-medium">
+<span class="material-icons-round text-lg text-accent-cyan">add_circle</span>
+<span>创建 IP</span>
+</button>
+<button class="w-10 h-10 rounded-full overflow-hidden border-2 border-tech-border hover:border-primary transition-colors shadow-lg shadow-black/20">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="User profile picture showing a smiling man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNb6hEBx5Du-bxJpwbiE1JgIGOdYhZ_-BQ2HOOHfZko6SllZ4KgFnM-8foq9X7QXXzu7atk09ntF9Fy8JSdSR7rAIeVGl8NSOZkBi_mz0FzDY4G96afwReZxCijJZQLIfTocOHl4hOgdvv960NCkTaMc2Qu4P9MNcxGNf_9AJqGpN7u7o6Q25PX2qJlOxYkwfCIPIzB7bDCKJIOUkF4OVUazGHJZgIXFHoD1QwpMCJ24GhZaIb-gsenGD0gIb4Ovxva_Q_bfvmfeU"/>
+</button>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="relative w-full rounded-2xl overflow-hidden mb-12 h-64 md:h-80 shadow-tech group border border-tech-border">
+<div class="absolute inset-0 bg-gradient-to-r from-slate-900 to-tech-dark z-0"></div>
+<div class="absolute right-0 top-0 w-2/3 h-full bg-[url('https://images.unsplash.com/photo-1615751072497-5f5169febeca?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=1200&amp;q=80')] bg-cover bg-center opacity-30 mix-blend-overlay mask-image-gradient" data-alt="Abstract digital network background"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-tech-dark via-transparent to-transparent opacity-80"></div>
+<div class="relative z-10 h-full flex flex-col justify-center px-8 md:px-16 max-w-3xl">
+<span class="inline-flex items-center gap-1 py-1 px-3 rounded-full bg-primary/10 border border-primary/20 backdrop-blur text-primary-glow text-xs font-bold uppercase tracking-wider mb-4 w-fit">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-cyan animate-pulse"></span>
+                    AI 创世引擎 V2.0
+                </span>
+<h1 class="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight tracking-tight">
+                    重塑你的<br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-glow to-accent-cyan">数字宠物宇宙</span>
+</h1>
+<p class="text-slate-400 text-lg mb-8 max-w-lg font-light">
+                    基于深度学习生成独一无二的 3D 宠物 IP，支持 VR 预览与实体周边一键定制。
+                </p>
+<div class="flex gap-4">
+<button class="px-8 py-3 bg-gradient-to-r from-primary to-indigo-600 hover:from-primary-glow hover:to-indigo-500 text-white rounded-full font-semibold shadow-lg shadow-primary/25 transition-all transform hover:-translate-y-1 border border-white/10">
+                        立即生成
+                    </button>
+<button class="px-8 py-3 bg-secondary hover:bg-tech-border text-slate-300 hover:text-white rounded-full font-semibold shadow-sm transition-all border border-tech-border flex items-center gap-2">
+<span class="material-icons-round text-lg">play_circle</span>
+                        演示视频
+                    </button>
+</div>
+</div>
+</div>
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
+<div class="flex overflow-x-auto no-scrollbar gap-3 pb-2 md:pb-0 items-center">
+<button class="whitespace-nowrap px-6 py-2.5 bg-tech-card text-white border border-primary/50 rounded-full font-medium text-sm shadow-[0_0_15px_rgba(139,92,246,0.4)] animate-pulse-glow transition-all relative overflow-hidden">
+<div class="absolute inset-0 bg-primary/10"></div>
+<span class="relative z-10">今日推荐</span>
+</button>
+<button class="whitespace-nowrap px-6 py-2.5 bg-secondary hover:bg-tech-border border border-tech-border hover:border-slate-600 text-slate-400 hover:text-white rounded-full font-medium transition-colors text-sm">人气榜单 🔥</button>
+<button class="whitespace-nowrap px-6 py-2.5 bg-secondary hover:bg-tech-border border border-tech-border hover:border-slate-600 text-slate-400 hover:text-white rounded-full font-medium transition-colors text-sm">赛博朋克</button>
+<button class="whitespace-nowrap px-6 py-2.5 bg-secondary hover:bg-tech-border border border-tech-border hover:border-slate-600 text-slate-400 hover:text-white rounded-full font-medium transition-colors text-sm">机甲兽</button>
+<button class="whitespace-nowrap px-6 py-2.5 bg-secondary hover:bg-tech-border border border-tech-border hover:border-slate-600 text-slate-400 hover:text-white rounded-full font-medium transition-colors text-sm">全息幻影</button>
+</div>
+<div class="flex items-center gap-2 text-sm text-slate-500">
+<span class="material-icons-round text-lg">filter_list</span>
+<span>高级筛选</span>
+</div>
+</div>
+<div class="masonry-grid">
+<div class="masonry-item relative group break-inside-avoid">
+<div class="bg-tech-card rounded-2xl overflow-hidden shadow-tech hover:shadow-tech-hover transition-all duration-500 border border-tech-border hover:border-primary/30">
+<div class="relative overflow-hidden aspect-[3/4]">
+<img alt="Futuristic cat wearing neon goggles" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A Siamese cat wearing futuristic neon goggles in a cyberpunk style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWUUoRmp1MXQhj5KYDAhfB1_33vOoN1ov13qxzOMswTU330j9r69GjL9HsRKzdpGCzcrFI5gd3cl47Ih2s15oyqML3m5NIWk-Wgh2zulJBA4j6A2jd4HSvj2EVLPY55zq5IYNkQcrxzzuoKfMdfVFILNPpr9Xl_br5MkXR2X8WBzzuGBeTY3LW2bO0QandarrrWnL-n6dJiL5cPdkOMKyU01XQvaMEdmBW3GpaLoMkah_mjO33deGbPWxF5u6GzUyt8oMD32FaOaI"/>
+<div class="absolute top-3 left-3 flex gap-2">
+<span class="bg-black/60 backdrop-blur-md text-accent-cyan text-[10px] font-bold px-2.5 py-1 rounded-full border border-accent-cyan/30 tracking-wide">3D MODEL</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-tech-dark via-tech-dark/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+<button class="bg-white text-tech-dark hover:bg-accent-cyan hover:text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-black/50 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2 text-sm">
+<span class="material-icons-round text-sm">smart_toy</span>
+                                生成同款
+                            </button>
+</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="font-bold text-white text-lg tracking-tight group-hover:text-primary-glow transition-colors">赛博喵星人 Z-7</h3>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="text-[10px] px-2 py-0.5 rounded bg-secondary text-slate-400 border border-tech-border">#赛博朋克</span>
+<span class="text-[10px] px-2 py-0.5 rounded bg-secondary text-slate-400 border border-tech-border">#机甲</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-tech-border">
+<div class="flex items-center gap-2.5">
+<div class="relative">
+<img alt="Creator avatar" class="w-7 h-7 rounded-full ring-2 ring-tech-dark" data-alt="Portrait of a female creator" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAd5AZX7xMYQSGi4IXlXamTGYA8-Gde5jOGy0wcT_pYk1kj_t7C2RAIl2vA-hQEcbTj6XJTDTl9Ql1UK1I_0zPQZ7_44cK0o5uzrLSnFp9gaP_o89M7OjhmqApsptD4iZtuyrtUnYmlzYek0JX4BbqAeC1_QaowoQ8PD6878qMHWJLziwNRwPgc-n-DdSb2CFXMRkhkYc1aXqiJXrWbEy9nv_xuq4dEnwmB5_kctNnLvHkPyY6-FJaC3-I9EXp8ntjXBPB7cWw5Ps4"/>
+<div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-tech-dark"></div>
+</div>
+<span class="text-xs font-medium text-slate-300">喵力无限</span>
+</div>
+<div class="flex gap-3">
+<button class="group/btn flex items-center gap-1.5 text-slate-500 hover:text-pink-500 transition-colors">
+<span class="material-icons-round text-lg group-hover/btn:scale-110 transition-transform">favorite</span>
+<span class="text-xs font-medium text-slate-400 group-hover/btn:text-pink-500">1.2k</span>
+</button>
+<button class="group/btn flex items-center gap-1 text-slate-500 hover:text-accent-cyan transition-colors">
+<span class="material-icons-round text-lg group-hover/btn:scale-110 transition-transform">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="masonry-item relative group break-inside-avoid">
+<div class="bg-tech-card rounded-2xl overflow-hidden shadow-tech hover:shadow-tech-hover transition-all duration-500 border border-tech-border hover:border-primary/30">
+<div class="relative overflow-hidden aspect-square">
+<img alt="Golden retriever puppy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[30%] group-hover:grayscale-0" data-alt="Cute golden retriever puppy looking at camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6-lqiludu4MC0GZY1WGJKRglO-hhnA1_IGiKjr-hlt_qBqdgdlc-uc8oHWeHTHkGrdstd5SG_LWuzRgisblPF7i2z7JXusnAE4v_E43Ce0_cyzmryEWJsCfs-vO9uY0uJPhoMEzyHbkwM1EPsw7CmsjeiBBoxgSJqgiOPPuNPww1Y1JzbSYeJpwEo3Zdji4nYd3Z-kfzW59dRVmOJRjiSoL4i-tNOEt-WFgT7E_h-Min2KVIFW7PoxUi8M05P1SqIkG-dvdqLYH0"/>
+<div class="absolute inset-0 bg-gradient-to-t from-tech-dark via-tech-dark/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+<button class="bg-white text-tech-dark hover:bg-accent-cyan hover:text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-black/50 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2 text-sm">
+<span class="material-icons-round text-sm">smart_toy</span>
+                                生成同款
+                            </button>
+</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="font-bold text-white text-lg tracking-tight group-hover:text-primary-glow transition-colors">仿生金毛 Type-A</h3>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="text-[10px] px-2 py-0.5 rounded bg-secondary text-slate-400 border border-tech-border">#治愈系</span>
+<span class="text-[10px] px-2 py-0.5 rounded bg-secondary text-slate-400 border border-tech-border">#超写实</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-tech-border">
+<div class="flex items-center gap-2.5">
+<img alt="Creator" class="w-7 h-7 rounded-full ring-2 ring-tech-dark" data-alt="Portrait of a male creator" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0_NrmHBqt9Cn0IjX0RZXiuElDntMhlewc-yus58pgZ5kTx3omcv87NXAarvgsnF3r0wMwScmfPtGqQvYp4Mh2koEcWKSEzoS71gTi79bcGoJlFhM95tq4vKYpbfAuqZu9LANt_y6PHWNIRL8aruOVZLyLFX-8cpRffwNVRffj6BW5YqIo1PAQ6Jt11snK4qkbXvQyeTpgmCD6VL0xF83BUaxLgDegnMm-gib-_dpMSSxztWS8tUfabI2RS1lHaqVWqfOiFaFLlbE"/>
+<span class="text-xs font-medium text-slate-300">汪星探长</span>
+</div>
+<div class="flex gap-3">
+<button class="group/btn flex items-center gap-1.5 text-pink-500 transition-colors">
+<span class="material-icons-round text-lg">favorite</span>
+<span class="text-xs font-medium">856</span>
+</button>
+<button class="group/btn flex items-center gap-1 text-slate-500 hover:text-accent-cyan transition-colors">
+<span class="material-icons-round text-lg">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="masonry-item relative group break-inside-avoid">
+<div class="bg-tech-card rounded-2xl overflow-hidden shadow-tech hover:shadow-tech-hover transition-all duration-500 border border-tech-border hover:border-primary/30">
+<div class="relative overflow-hidden aspect-[3/5]">
+<img alt="Cat in space illustration" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="Artistic illustration of a cat floating in space" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJsWheUnOGeOYY7p2C6fZn25hFB6wK7y1t8J1mJvB10cgJz9P4FgVMQEfDhlaUPu06UX0hoc-ecOkPMksp3lT577p5pLSkVO8H_YCuN4vWSdhpdlhsCb-TVhpUTlFg7xK1UJCpJORg9NgsntXc6-XkM-B22JUqoLdJ8RC_UbIYAnpQrqTouqELSyfJ1sdRnVj8H93m81S51ZkPfgYf_tugWPvZ9FPlJKcESuEFfBVvp1GYs77C8FX_THQA6CUr9VQiEZ4yGO5epc0"/>
+<div class="absolute top-3 left-3 flex gap-2">
+<span class="bg-secondary/90 backdrop-blur-md text-primary-glow text-[10px] font-bold px-2.5 py-1 rounded-full border border-primary/20">NFT ART</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-tech-dark via-tech-dark/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+<button class="bg-white text-tech-dark hover:bg-accent-cyan hover:text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-black/50 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2 text-sm">
+<span class="material-icons-round text-sm">smart_toy</span>
+                                生成同款
+                            </button>
+</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="font-bold text-white text-lg tracking-tight group-hover:text-primary-glow transition-colors">太空漫游者 No.42</h3>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="text-[10px] px-2 py-0.5 rounded bg-secondary text-slate-400 border border-tech-border">#星际</span>
+<span class="text-[10px] px-2 py-0.5 rounded bg-secondary text-slate-400 border border-tech-border">#概念艺术</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-tech-border">
+<div class="flex items-center gap-2.5">
+<img alt="Creator" class="w-7 h-7 rounded-full ring-2 ring-tech-dark" data-alt="Portrait of a female creator with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzkgrXicyAhXvB4hX1KwmhUf_Ivwiu4jV-0kk_Rv0JslGoIPyst85dMSYyzf7K6jLA-LOenvWIofB28l1HcvRCeMvxL8DaggST65Mdg4xrGywFe4RVnnedjy0VUP447okTm_IshlpbLGsQRG9arYzkk37Vulbg9bnwDRRAuSz1dL62poaf0hVyHd2wksIF6LBthvRYqNt0Dq1dOQC3QsZPEoAerRe2iZnsWy9h71IFvNk5yane2uITcyWMk_BsOLpTmcPMwCGeMZw"/>
+<span class="text-xs font-medium text-slate-300">绘梦师</span>
+</div>
+<div class="flex gap-3">
+<button class="group/btn flex items-center gap-1.5 text-slate-500 hover:text-pink-500 transition-colors">
+<span class="material-icons-round text-lg">favorite</span>
+<span class="text-xs font-medium text-slate-400 group-hover/btn:text-pink-500">3.4k</span>
+</button>
+<button class="group/btn flex items-center gap-1 text-slate-500 hover:text-accent-cyan transition-colors">
+<span class="material-icons-round text-lg">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="masonry-item relative group break-inside-avoid">
+<div class="bg-tech-card rounded-2xl overflow-hidden shadow-tech hover:shadow-tech-hover transition-all duration-500 border border-tech-border hover:border-primary/30">
+<div class="relative overflow-hidden aspect-[4/3]">
+<img alt="Cute corgi jumping" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A happy corgi running in a field" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAld-3--YA7870C7QPR1lmvA5NUF3pUWbDrHo8xhky30aouqno5BMXNlr9ma6brVv-Hse9UshzTkfH3BfNJRr3b9KdUL6nSk6GRHAuxJuAfZIsCXGf5FYHw0jvNJ1ZuNpwXpAByRS2-cbdLh1EddTl8JeLCdJVptpz4MjDMjs4UXmlgAmErEJzJ1iIrSmL4yFSUtdXE3_diymKPpJGyhADKqU0wKXEz7HV73Lq8Pu6FYXWcsClEOqrTUdwcUo0Q_ieQrOS-xi9HTOQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-tech-dark via-tech-dark/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+<button class="bg-white text-tech-dark hover:bg-accent-cyan hover:text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-black/50 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2 text-sm">
+<span class="material-icons-round text-sm">smart_toy</span>
+                                生成同款
+                            </button>
+</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="font-bold text-white text-lg tracking-tight group-hover:text-primary-glow transition-colors">机械柯基原型机</h3>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="text-[10px] px-2 py-0.5 rounded bg-secondary text-slate-400 border border-tech-border">#柯基</span>
+<span class="text-[10px] px-2 py-0.5 rounded bg-secondary text-slate-400 border border-tech-border">#动能模组</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-tech-border">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[10px] font-bold text-white ring-2 ring-tech-dark">K</div>
+<span class="text-xs font-medium text-slate-300">Kevin.Design</span>
+</div>
+<div class="flex gap-3">
+<button class="group/btn flex items-center gap-1.5 text-slate-500 hover:text-pink-500 transition-colors">
+<span class="material-icons-round text-lg">favorite</span>
+<span class="text-xs font-medium text-slate-400 group-hover/btn:text-pink-500">230</span>
+</button>
+<button class="group/btn flex items-center gap-1 text-slate-500 hover:text-accent-cyan transition-colors">
+<span class="material-icons-round text-lg">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="masonry-item relative group break-inside-avoid">
+<div class="bg-tech-card rounded-2xl overflow-hidden shadow-tech hover:shadow-tech-hover transition-all duration-500 border border-tech-border hover:border-primary/30">
+<div class="relative overflow-hidden aspect-[3/4]">
+<img alt="Mystical white cat" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A mystical white cat with glowing eyes in a dark forest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWq-l5j8qeVrj6B5mfiOP865_CnBCwfaby_bra1H62PysXvgKAWJ9xawunkFKWfEXnYQZQaHavdUJjrkWnBbomgiaUplATliFjf8VyAKsMMgH1LinF0w4GxMeHYSfs9CLqItkesffbaIZWzkPQzc2xuBIONPtS2Fyg21dXs7Fp6j77vg7u4ROeKIK96mZChLntPIYDtkdUcOaR4bN91HOmUh_zu_tpyCFphM3mVZ0-0vSx2jL1zx0XSX-fHaK9fyN_2MuHTtZFkfg"/>
+<div class="absolute top-3 left-3 flex gap-2">
+<span class="bg-purple-900/80 backdrop-blur-md text-purple-200 text-[10px] font-bold px-2.5 py-1 rounded-full border border-purple-500/30">LIMITED</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-tech-dark via-tech-dark/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+<button class="bg-white text-tech-dark hover:bg-accent-cyan hover:text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-black/50 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2 text-sm">
+<span class="material-icons-round text-sm">smart_toy</span>
+                                生成同款
+                            </button>
+</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="font-bold text-white text-lg tracking-tight group-hover:text-primary-glow transition-colors">幽能灵猫</h3>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="text-[10px] px-2 py-0.5 rounded bg-secondary text-slate-400 border border-tech-border">#暗能系</span>
+<span class="text-[10px] px-2 py-0.5 rounded bg-secondary text-slate-400 border border-tech-border">#异界生物</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-tech-border">
+<div class="flex items-center gap-2.5">
+<img alt="Creator" class="w-7 h-7 rounded-full ring-2 ring-tech-dark" data-alt="Portrait of a male creator looking creative" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBP2xAB3xno8cseSXUIgw7pqMuEPO5nXrmatC3YNDUDNeX67OWrQdV_U4OvLB06D2964HnHcGzWLGYzRfwkBfVEPUrdiNU6tEZjrfKeZf3MPFg-GoLfr3K_slQMtZZR4uCaaUlipn2G5lRt4QY3NBeO1zVo7odktppE5a34mGYHoY0xD_UiiLhrJatg7-MTERY4osTuTR0EY1D2PYYpZvWIotUoK6i45OXU0kZK-RPPp4H8X-MEG2NQROlm8x5af3LmBh2CENDbgiI"/>
+<span class="text-xs font-medium text-slate-300">NightOwl</span>
+</div>
+<div class="flex gap-3">
+<button class="group/btn flex items-center gap-1.5 text-slate-500 hover:text-pink-500 transition-colors">
+<span class="material-icons-round text-lg">favorite</span>
+<span class="text-xs font-medium text-slate-400 group-hover/btn:text-pink-500">99+</span>
+</button>
+<button class="group/btn flex items-center gap-1 text-slate-500 hover:text-accent-cyan transition-colors">
+<span class="material-icons-round text-lg">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="masonry-item relative group break-inside-avoid">
+<div class="bg-tech-card rounded-2xl overflow-hidden shadow-tech hover:shadow-tech-hover transition-all duration-500 border border-tech-border hover:border-primary/30">
+<div class="relative overflow-hidden aspect-square">
+<img alt="Dog with sunglasses" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A cool dog wearing stylish sunglasses and a bandana" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAO6US5Pom_5DqTxtRffp4sMhNgmaFOD3juKwgJyApbKjp4LTwMO_Dp_GLISUGADSI8tSHc6bbBC0PzAk18RYa_vRt4Ie9yvHOk0ZV_u_iIvjwtP3bLau8MJW-FxsyXXH4dPfhJs7Zb2sl-wI-T03tR4PxBmiQut1UA47JAhX-Cmjcl_Mn5gz7O9HQPHaLg4sMyblPCAmqm6s-Un9e54RbY1qh17fooyfNKeNrQ1_60M-afk5-7sU1NVBzM2UbJtwZgkaZpmFqWiBY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-tech-dark via-tech-dark/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+<button class="bg-white text-tech-dark hover:bg-accent-cyan hover:text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-black/50 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2 text-sm">
+<span class="material-icons-round text-sm">smart_toy</span>
+                                生成同款
+                            </button>
+</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="font-bold text-white text-lg tracking-tight group-hover:text-primary-glow transition-colors">潮流教主 X</h3>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="text-[10px] px-2 py-0.5 rounded bg-secondary text-slate-400 border border-tech-border">#街头时尚</span>
+<span class="text-[10px] px-2 py-0.5 rounded bg-secondary text-slate-400 border border-tech-border">#虚拟偶像</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-tech-border">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center text-[10px] font-bold border border-pink-500/30">M</div>
+<span class="text-xs font-medium text-slate-300">MomoChan</span>
+</div>
+<div class="flex gap-3">
+<button class="group/btn flex items-center gap-1.5 text-slate-500 hover:text-pink-500 transition-colors">
+<span class="material-icons-round text-lg">favorite</span>
+<span class="text-xs font-medium text-slate-400 group-hover/btn:text-pink-500">452</span>
+</button>
+<button class="group/btn flex items-center gap-1 text-slate-500 hover:text-accent-cyan transition-colors">
+<span class="material-icons-round text-lg">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex justify-center mt-12 mb-8">
+<button class="flex items-center gap-2 px-8 py-3 bg-secondary hover:bg-tech-border text-slate-300 hover:text-white rounded-full font-medium transition-colors border border-tech-border hover:border-primary/50 shadow-lg shadow-black/20 group">
+<span class="material-icons-round animate-spin text-lg group-hover:text-primary-glow">refresh</span>
+                加载更多数据流
+            </button>
+</div>
+</main>
+<div class="fixed bottom-6 right-6 sm:hidden z-50">
+<button class="w-14 h-14 bg-gradient-to-br from-primary to-indigo-600 text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-icons-round text-2xl">add</span>
+</button>
+</div>
+
+</body></html>

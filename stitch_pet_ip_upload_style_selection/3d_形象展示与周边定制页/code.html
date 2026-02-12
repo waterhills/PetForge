@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>3D 形象展示与定制 (深色科技版)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans+SC:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#8c2bee",
+                        "primary-light": "#a75bf2",
+                        "background-dark": "#0f0816",
+                        "panel-bg": "rgba(30, 20, 45, 0.6)",
+                        "tech-purple": "#b580ff",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "Noto Sans SC", "sans-serif"],
+                        "sans": ["Noto Sans SC", "sans-serif"],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 20px rgba(140, 43, 238, 0.4)',
+                        'neon-strong': '0 0 30px rgba(140, 43, 238, 0.6)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f0816; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8c2bee; 
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .tech-sidebar {
+            background: rgba(20, 15, 30, 0.4); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(140, 43, 238, 0.15);
+        }
+        .gradient-glow-bg {
+            background: radial-gradient(circle at 50% 50%, rgba(140, 43, 238, 0.15) 0%, rgba(15, 8, 22, 0) 70%);
+        }
+        .floor-projection {
+            background: radial-gradient(ellipse at center, rgba(140, 43, 238, 0.3) 0%, rgba(140, 43, 238, 0.05) 40%, transparent 70%);
+            filter: blur(10px);
+            transform: scaleY(0.3);
+        }
+        .grid-bg {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+        .tech-btn-gradient {
+            background: linear-gradient(135deg, #8c2bee 0%, #6015b0 100%);
+        }
+        .tech-btn-gradient:hover {
+            background: linear-gradient(135deg, #9d4bf0 0%, #7620d1 100%);
+            box-shadow: 0 0 15px rgba(140, 43, 238, 0.5);
+        }
+        .selection-active-glow {
+            box-shadow: 0 0 15px rgba(140, 43, 238, 0.2), inset 0 0 20px rgba(140, 43, 238, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-gray-100 font-display h-screen overflow-hidden flex flex-col grid-bg">
+<nav class="h-20 px-8 flex items-center justify-between bg-[#0f0816]/80 backdrop-blur-md border-b border-white/5 z-50 fixed w-full top-0">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-primary/30 relative overflow-hidden">
+<div class="absolute inset-0 bg-white/20 blur-sm"></div>
+<span class="relative z-10">P</span>
+</div>
+<span class="text-xl font-bold tracking-tight text-white">PetVerse <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-purple-300">3D</span></span>
+</div>
+<div class="flex items-center gap-6">
+<a class="text-gray-400 hover:text-primary-light transition-colors text-sm font-medium tracking-wide" href="#">作品集</a>
+<a class="text-gray-400 hover:text-primary-light transition-colors text-sm font-medium tracking-wide" href="#">AI 生成</a>
+<a class="text-white bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full transition-all flex items-center gap-2 group" href="#">
+<span class="material-icons text-sm group-hover:text-primary-light transition-colors">shopping_cart</span>
+<span class="text-sm font-medium">购物车 (2)</span>
+</a>
+<div class="w-10 h-10 rounded-full bg-gray-800 overflow-hidden border border-primary/50 shadow-neon">
+<img class="w-full h-full object-cover" data-alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC69yLEfeYoMrYVg3RlCvbsK-_8E4AHclhBqrYw01GQlUYHOUGdUvimhXA5ArsNhBzSF7N22Rt00XIbfCsaadS5lIOEUCiANvEukq3aqH7tiviXruegyhTo1Wt9R4Dm38th8xRQvctFNEfMntU8mhfjwWe6hxyA2unEp3PU5tsJSr6oGCj_qkxFhXlmRZB04QEykTTu1y5-hLovvSFVapGebAyFI8oxdMWcFB_xM4-Mqqx36JJz9aZUd_chS6t2WoKY-QfreRnwpVA"/>
+</div>
+</div>
+</nav>
+<main class="flex-1 flex pt-20 h-screen relative overflow-hidden">
+<div class="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] gradient-glow-bg pointer-events-none z-0"></div>
+<div class="absolute inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_30%_50%,rgba(140,43,238,0.08),transparent_50%)]"></div>
+<section class="flex-1 relative flex flex-col items-center justify-center p-8 z-10">
+<div class="relative w-full h-full max-h-[800px] flex items-center justify-center group">
+<div class="absolute bottom-[20%] w-[600px] h-[200px] floor-projection pointer-events-none z-0"></div>
+<div class="relative z-10 w-[550px] h-[550px] transition-transform duration-500 hover:scale-105">
+<img alt="3D rendered cute cat figurine floating" class="w-full h-full object-contain drop-shadow-[0_20px_60px_rgba(130,30,220,0.35)]" data-alt="A high quality 3D render of a stylized cute cat sitting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYGY4YxIvVEZTA1t2hoS7r22OJdqtVM1MAImstgAH5A-Hj-9RxDowAI0VFwaYOFCxSBg11CDoCVTl20n0FFCQN82s1mfbVx5RmCT3KUjGRZ0qWsPrvKQk8o0nFcn869Ae0fXBEjgrLLSGoW1XMPCCFNLOYSXZb_T9_yYhcNQPu4YBv5GM55YgBUH0AsnDZKCcSKaD54zbCG5Abk_F9-hU41kpe0ZLly5y27JprXUf8efn0Fp4pp3FO4OSfISo8yBm1Z9tGgxWghaM"/>
+<div class="absolute top-[30%] left-[60%] w-3 h-3 bg-primary rounded-full animate-ping opacity-75 cursor-pointer"></div>
+<div class="absolute top-[30%] left-[60%] w-3 h-3 bg-white rounded-full border border-primary cursor-pointer hover:scale-150 transition-transform shadow-[0_0_10px_rgba(255,255,255,0.8)]" title="查看细节"></div>
+</div>
+<div class="absolute bottom-12 left-1/2 -translate-x-1/2 glass-panel px-8 py-4 rounded-2xl flex gap-8 shadow-2xl shadow-black/50 border border-white/10">
+<button class="text-gray-400 hover:text-tech-purple transition-colors flex flex-col items-center gap-1 group">
+<span class="material-icons group-hover:-translate-y-1 transition-transform text-white/80">3d_rotation</span>
+<span class="text-[10px] uppercase tracking-wider font-medium">旋转</span>
+</button>
+<button class="text-gray-400 hover:text-tech-purple transition-colors flex flex-col items-center gap-1 group">
+<span class="material-icons group-hover:-translate-y-1 transition-transform text-white/80">zoom_in</span>
+<span class="text-[10px] uppercase tracking-wider font-medium">缩放</span>
+</button>
+<button class="text-gray-400 hover:text-tech-purple transition-colors flex flex-col items-center gap-1 group">
+<span class="material-icons group-hover:-translate-y-1 transition-transform text-white/80">light_mode</span>
+<span class="text-[10px] uppercase tracking-wider font-medium">灯光</span>
+</button>
+<div class="w-px h-10 bg-white/10 mx-2 self-center"></div>
+<button class="text-primary-light hover:text-white transition-colors flex flex-col items-center gap-1 group">
+<span class="material-icons group-hover:-translate-y-1 transition-transform">restart_alt</span>
+<span class="text-[10px] uppercase tracking-wider font-medium">重置</span>
+</button>
+</div>
+<div class="absolute top-10 left-10 glass-panel px-4 py-2 rounded-lg text-sm text-gray-300 border-l-4 border-l-primary flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.6)]"></div>
+<span class="text-gray-200 font-medium">模型精度: <span class="text-tech-purple font-mono">4K Ultra</span></span>
+</div>
+</div>
+</section>
+<aside class="w-[450px] tech-sidebar flex flex-col h-full shadow-2xl z-20 overflow-hidden relative">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-3xl pointer-events-none"></div>
+<div class="p-8 pb-6 relative z-10">
+<div class="flex items-center gap-3 mb-3">
+<span class="px-2 py-0.5 bg-primary/20 border border-primary/30 text-primary-light text-[10px] font-bold rounded uppercase tracking-widest backdrop-blur-sm">热门推荐</span>
+<span class="text-xs text-gray-500 font-mono tracking-wide">ID: #8392-CAT-V2</span>
+</div>
+<h1 class="text-3xl font-bold mb-3 text-white tracking-tight drop-shadow-md">波波喵星人 <span class="text-gray-500 font-normal text-2xl ml-1">(Bobo)</span></h1>
+<p class="text-gray-400 text-sm leading-relaxed font-light">
+                基于您上传的照片 AI 生成的独一无二的 3D 形象。现在可以将它带入现实世界或数字空间。
+            </p>
+</div>
+<div class="flex-1 overflow-y-auto px-8 py-2 space-y-8 relative z-10 custom-scrollbar">
+<div>
+<h3 class="text-xs font-bold text-tech-purple uppercase tracking-widest mb-5 flex items-center gap-2">
+<span class="w-8 h-px bg-tech-purple/30"></span>
+                    选择定制类型
+                    <span class="w-full h-px bg-tech-purple/10"></span>
+</h3>
+<div class="grid grid-cols-1 gap-4">
+<label class="relative group cursor-pointer block">
+<input checked="" class="peer sr-only" name="product_type" type="radio"/>
+<div class="p-4 rounded-xl border border-primary/50 bg-primary/10 flex items-center gap-4 transition-all peer-checked:bg-primary/20 peer-checked:border-primary peer-checked:selection-active-glow hover:bg-white/5">
+<div class="w-14 h-14 rounded-lg bg-gradient-to-br from-gray-800 to-black border border-white/10 flex items-center justify-center text-primary-light shadow-lg">
+<span class="material-icons text-2xl">view_in_ar</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<h4 class="font-bold text-lg text-white">3D 实体摆件</h4>
+<span class="text-primary-light font-bold font-mono">¥299</span>
+</div>
+<p class="text-xs text-gray-400">高精度树脂打印，手工上色</p>
+</div>
+<div class="w-6 h-6 rounded-full border border-primary/50 bg-black/50 flex items-center justify-center peer-checked:border-primary">
+<div class="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(140,43,238,0.8)] opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+</div>
+</div>
+</label>
+<label class="relative group cursor-pointer block">
+<input class="peer sr-only" name="product_type" type="radio"/>
+<div class="p-4 rounded-xl border border-white/10 bg-white/5 flex items-center gap-4 transition-all hover:bg-white/10 hover:border-white/20 peer-checked:border-primary peer-checked:bg-primary/10">
+<div class="w-14 h-14 rounded-lg bg-black/40 border border-white/5 flex items-center justify-center text-gray-400">
+<span class="material-icons text-2xl">checkroom</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<h4 class="font-bold text-lg text-gray-300 group-hover:text-white transition-colors">定制 T 恤</h4>
+<span class="text-gray-300 font-bold font-mono">¥129</span>
+</div>
+<p class="text-xs text-gray-500">100% 纯棉，高清印花</p>
+</div>
+<div class="w-6 h-6 rounded-full border border-gray-600 bg-black/30 flex items-center justify-center peer-checked:border-primary">
+<div class="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(140,43,238,0.8)] opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+</div>
+</div>
+</label>
+<label class="relative group cursor-pointer block">
+<input class="peer sr-only" name="product_type" type="radio"/>
+<div class="p-4 rounded-xl border border-white/10 bg-white/5 flex items-center gap-4 transition-all hover:bg-white/10 hover:border-white/20 peer-checked:border-primary peer-checked:bg-primary/10">
+<div class="w-14 h-14 rounded-lg bg-black/40 border border-white/5 flex items-center justify-center text-gray-400">
+<span class="material-icons text-2xl">wallpaper</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<h4 class="font-bold text-lg text-gray-300 group-hover:text-white transition-colors">数字动态壁纸</h4>
+<span class="text-gray-300 font-bold font-mono">¥19.9</span>
+</div>
+<p class="text-xs text-gray-500">4K 分辨率，支持 iOS/Android</p>
+</div>
+<div class="w-6 h-6 rounded-full border border-gray-600 bg-black/30 flex items-center justify-center peer-checked:border-primary">
+<div class="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(140,43,238,0.8)] opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+</div>
+</div>
+</label>
+</div>
+</div>
+<div class="animate-fade-in">
+<h3 class="text-xs font-bold text-tech-purple uppercase tracking-widest mb-5 flex items-center gap-2">
+<span class="w-8 h-px bg-tech-purple/30"></span>
+                    规格配置
+                    <span class="w-full h-px bg-tech-purple/10"></span>
+</h3>
+<div class="mb-8">
+<label class="block text-xs font-medium text-gray-400 mb-3">尺寸</label>
+<div class="flex gap-3 bg-black/20 p-1 rounded-xl border border-white/5">
+<button class="flex-1 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                            小号 (8cm)
+                        </button>
+<button class="flex-1 py-2.5 rounded-lg bg-primary/20 text-primary-light border border-primary/30 text-sm font-bold shadow-lg shadow-primary/10">
+                            中号 (12cm)
+                        </button>
+<button class="flex-1 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                            大号 (18cm)
+                        </button>
+</div>
+</div>
+<div>
+<label class="block text-xs font-medium text-gray-400 mb-3">底座样式</label>
+<div class="grid grid-cols-4 gap-4">
+<button class="aspect-square rounded-xl border border-primary p-1 bg-white/5 shadow-[0_0_10px_rgba(140,43,238,0.2)] tooltip-trigger relative group">
+<div class="w-full h-full bg-gray-900 rounded-lg border border-white/10 flex items-center justify-center">
+<div class="w-2 h-2 bg-primary rounded-full"></div>
+</div>
+<span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/90 border border-white/20 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">经典黑</span>
+</button>
+<button class="aspect-square rounded-xl border border-white/10 p-1 bg-white/5 hover:border-primary/50 hover:bg-white/10 transition-colors group relative">
+<div class="w-full h-full bg-gray-200 rounded-lg opacity-80"></div>
+</button>
+<button class="aspect-square rounded-xl border border-white/10 p-1 bg-white/5 hover:border-primary/50 hover:bg-white/10 transition-colors group relative">
+<div class="w-full h-full bg-gradient-to-br from-yellow-700 to-yellow-900 rounded-lg opacity-80"></div>
+</button>
+<button class="aspect-square rounded-xl border border-white/10 p-1 bg-white/5 hover:border-primary/50 hover:bg-white/10 transition-colors group relative">
+<div class="w-full h-full bg-gradient-to-br from-primary to-purple-900 rounded-lg opacity-80"></div>
+</button>
+</div>
+</div>
+</div>
+<div class="pt-6 border-t border-white/10">
+<h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">商品详情</h3>
+<ul class="text-sm text-gray-400 space-y-2 list-none">
+<li class="flex items-center gap-2">
+<span class="w-1 h-1 bg-primary rounded-full"></span>
+                        独家 AI 建模技术，还原度 95% 以上
+                    </li>
+<li class="flex items-center gap-2">
+<span class="w-1 h-1 bg-primary rounded-full"></span>
+                        环保树脂材料，无毒无味
+                    </li>
+<li class="flex items-center gap-2">
+<span class="w-1 h-1 bg-primary rounded-full"></span>
+                        发货时间：定制周期约 5-7 个工作日
+                    </li>
+</ul>
+</div>
+</div>
+<div class="p-8 border-t border-white/10 bg-black/20 backdrop-blur-lg">
+<div class="flex justify-between items-end mb-5">
+<div>
+<p class="text-xs text-tech-purple mb-1">总计金额</p>
+<p class="text-3xl font-bold text-white font-mono tracking-tight">¥299.00</p>
+</div>
+</div>
+<div class="flex gap-4">
+<button class="w-16 h-14 rounded-xl border border-white/10 bg-white/5 text-gray-300 font-bold hover:bg-white/10 hover:text-white transition-colors flex items-center justify-center group">
+<span class="material-icons text-xl group-hover:text-red-400 transition-colors">favorite_border</span>
+</button>
+<button class="flex-1 h-14 rounded-xl tech-btn-gradient text-white font-bold transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-3 relative overflow-hidden group">
+<span class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></span>
+<span class="material-icons">shopping_bag</span>
+<span class="tracking-wide">加入购物车</span>
+</button>
+</div>
+</div>
+</aside>
+</main>
+<script>
+    tailwind.config.theme.extend.keyframes = {
+        shimmer: {
+            '100%': { transform: 'translateX(100%)' },
+        }
+    }
+</script>
+
+</body></html>

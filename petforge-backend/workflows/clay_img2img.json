@@ -1,0 +1,65 @@
+{
+  "1": {
+    "inputs": {
+      "ckpt_name": "AnythingV5Ink_ink.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple"
+  },
+  "2": {
+    "inputs": {
+      "text": "cute pet, clay animation style, stop motion, polymer clay, soft texture, handcrafted, warm lighting, childish, adorable, pastel colors",
+      "clip": ["1", 1]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "3": {
+    "inputs": {
+      "text": "blurry, low quality, ugly, bad anatomy, distorted, deformed",
+      "clip": ["1", 1]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "10": {
+    "inputs": {
+      "image": "input_image_placeholder",
+      "upload": "image"
+    },
+    "class_type": "LoadImage"
+  },
+  "11": {
+    "inputs": {
+      "pixels": ["10", 0],
+      "vae": ["1", 2]
+    },
+    "class_type": "VAEEncode"
+  },
+  "4": {
+    "inputs": {
+      "seed": 123456789,
+      "steps": 25,
+      "cfg": 7.5,
+      "sampler_name": "euler_a",
+      "scheduler": "normal",
+      "denoise": 0.7,
+      "model": ["1", 0],
+      "positive": ["2", 0],
+      "negative": ["3", 0],
+      "latent_image": ["11", 0]
+    },
+    "class_type": "KSampler"
+  },
+  "6": {
+    "inputs": {
+      "samples": ["4", 0],
+      "vae": ["1", 2]
+    },
+    "class_type": "VAEDecode"
+  },
+  "7": {
+    "inputs": {
+      "filename_prefix": "petforge_clay_img2img",
+      "images": ["6", 0]
+    },
+    "class_type": "SaveImage"
+  }
+}

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PetForge - 赋予您的爱宠 AI 灵魂</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tech-purple": "#a855f7",
+              "tech-purple-light": "#d8b4fe",
+              "tech-orange": "#f97316",
+              "tech-bg-dark": "#0f0718",
+              "tech-bg-deep": "#050208",
+              "tech-card": "#1a1025",
+              "neon-purple": "#c084fc",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"],
+              "body": ["Noto Sans SC", "Microsoft YaHei", "sans-serif"],
+            },
+            backgroundImage: {
+              'gradient-tech': 'linear-gradient(to bottom, #1e1b4b, #0f0718, #000000)',
+              'grid-pattern': "url('data:image/svg+xml,%3Csvg width=\"40\" height=\"40\" viewBox=\"0 0 40 40\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"%236366f1\" fill-opacity=\"0.05\" fill-rule=\"evenodd\"%3E%3Cpath d=\"M0 40L40 0H20L0 20M40 40V20L20 40\"/%3E%3C/g%3E%3C/svg%3E')",
+            },
+            boxShadow: {
+              'neon': '0 0 20px rgba(168, 85, 247, 0.4)',
+              'neon-orange': '0 0 15px rgba(249, 115, 22, 0.4)',
+            }
+          },
+        },
+      }
+    </script>
+<style type="text/tailwindcss">
+    @layer utilities {
+      .text-glow {
+        text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+      }
+      .text-glow-orange {
+        text-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+      }
+      .border-glow {
+        box-shadow: 0 0 10px rgba(168, 85, 247, 0.3), inset 0 0 10px rgba(168, 85, 247, 0.1);
+      }
+    }
+    </style>
+<style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #050208;
+            color: #e2e8f0;
+        }
+        h1, h2, h3, h4, h5, h6, .font-display {
+            font-family: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+        }
+        .hero-bg {
+            background: radial-gradient(circle at 50% 0%, #2e1065 0%, #0f0718 60%, #000000 100%);
+        }
+        .tech-grid {
+            background-image: linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 100%);
+        }
+        .glass-nav {
+            background: rgba(15, 7, 24, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+        }
+        .glass-card-tech {
+            background: rgba(30, 20, 50, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden selection:bg-tech-purple selection:text-white">
+<nav class="sticky top-0 z-50 w-full glass-nav">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between h-20 items-center">
+<div class="flex-shrink-0 flex items-center gap-2 cursor-pointer group">
+<div class="relative">
+<div class="absolute inset-0 bg-tech-purple blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
+<span class="material-icons text-tech-purple relative z-10 text-3xl">smart_toy</span>
+</div>
+<span class="font-display font-bold text-2xl text-white tracking-tight group-hover:text-glow transition-all">PetForge</span>
+</div>
+<div class="hidden md:flex space-x-10">
+<a class="text-gray-300 hover:text-tech-purple hover:text-glow font-medium transition-all text-sm uppercase tracking-wider" href="#">创作</a>
+<a class="text-gray-300 hover:text-tech-purple hover:text-glow font-medium transition-all text-sm uppercase tracking-wider" href="#">画廊</a>
+<a class="text-gray-300 hover:text-tech-purple hover:text-glow font-medium transition-all text-sm uppercase tracking-wider" href="#">资产</a>
+<a class="text-gray-300 hover:text-tech-purple hover:text-glow font-medium transition-all text-sm uppercase tracking-wider" href="#">商店</a>
+<a class="text-gray-300 hover:text-tech-purple hover:text-glow font-medium transition-all text-sm uppercase tracking-wider" href="#">社区</a>
+</div>
+<div class="hidden md:flex items-center space-x-6">
+<a class="text-gray-300 hover:text-white transition-colors text-sm font-medium" href="#">登录</a>
+<button class="bg-tech-purple/20 hover:bg-tech-purple/40 text-tech-purple-light border border-tech-purple/50 px-6 py-2.5 rounded-full font-medium transition-all shadow-neon hover:shadow-lg flex items-center gap-2 group">
+<span class="group-hover:text-white transition-colors">开始创作</span>
+<span class="material-icons text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+<div class="md:hidden flex items-center">
+<button class="text-gray-300 hover:text-white">
+<span class="material-icons">menu</span>
+</button>
+</div>
+</div>
+</div>
+</nav>
+<section class="relative overflow-hidden pt-16 pb-24 lg:pt-32 lg:pb-40 hero-bg">
+<div class="absolute inset-0 tech-grid z-0 opacity-30 pointer-events-none"></div>
+<div class="absolute top-20 right-0 w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[100px] pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+<div class="grid lg:grid-cols-2 gap-16 items-center">
+<div class="text-center lg:text-left space-y-10">
+<div class="inline-flex items-center px-4 py-1.5 rounded-full bg-tech-purple/10 border border-tech-purple/30 text-tech-purple-light text-xs font-medium tracking-wide uppercase mb-2 backdrop-blur-sm">
+<span class="bg-tech-purple animate-pulse rounded-full w-2 h-2 mr-2 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>
+                        AI 3.0 引擎已就绪
+                    </div>
+<h1 class="text-5xl lg:text-7xl font-bold font-display text-white leading-tight">
+                        赋予您的爱宠 <br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-tech-purple via-pink-500 to-tech-orange text-glow">数字灵魂</span>
+</h1>
+<p class="text-lg text-gray-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
+                        超越照片的静态束缚。PetForge 运用前沿生成式 AI，为您打造具备赛博朋克美学与元宇宙交互能力的 3D 数字生命。
+                    </p>
+<div class="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start pt-6">
+<button class="relative overflow-hidden bg-white text-black px-8 py-4 rounded-xl font-bold text-lg transition-all hover:scale-105 flex items-center justify-center gap-2 group">
+<div class="absolute inset-0 bg-gradient-to-r from-tech-purple to-blue-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+<span class="material-icons">auto_awesome</span>
+<span>立即铸造 IP</span>
+</button>
+<button class="bg-transparent text-white border border-gray-600 hover:border-tech-purple hover:text-tech-purple-light hover:shadow-neon px-8 py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2">
+<span class="material-icons">play_arrow</span>
+                            观看演示
+                        </button>
+</div>
+<div class="pt-10 flex flex-wrap items-center justify-center lg:justify-start gap-8 text-sm text-gray-400 font-mono">
+<div class="flex items-center gap-2">
+<span class="material-icons text-tech-purple text-base">verified</span>
+<span>4K 超清渲染</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-icons text-tech-purple text-base">view_in_ar</span>
+<span>OBJ/GLB 导出</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-icons text-tech-purple text-base">lock</span>
+<span>NFT 区块链认证</span>
+</div>
+</div>
+</div>
+<div class="relative lg:h-[600px] flex items-center justify-center perspective-1000">
+<div class="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-transparent rounded-full opacity-50 blur-3xl transform scale-75"></div>
+<div class="relative w-full h-full flex items-center justify-center">
+<div class="absolute top-10 left-4 z-20 w-64 md:w-80 glass-card-tech p-2 rounded-2xl shadow-2xl transform -rotate-6 hover:rotate-0 transition-transform duration-500 hover:z-40 border-glow">
+<div class="aspect-[4/5] rounded-xl overflow-hidden bg-gray-900 relative group">
+<img alt="Pet Photo" class="w-full h-full object-cover filter brightness-90 contrast-125" data-alt="High tech looking dog" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDklrtL91wIlhG6aUBCzbjFIm1venpFNRplNQ4y2bS0qHjR5uXy4cqOdu69-BSfERXkMMP5JjbCSn9yf5P-4vmYFqRLHW-md3sOX-RhoJjaDL2_wrTTSWXnRB7D0WkmvP2I39oYIgwIp_0jii14BDCeWndYe_QgYeynTXSzMKLjF63vDuguM1g_syACTgpmVftcIT6Y8af9toDl9mTG1vYDjksgyjZ17JeKo1LqQYJ1RTnkcERyF51NHrqWOhTbu2A_5AVKjpgoARg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-4 right-4 flex flex-col gap-1 items-end">
+<div class="w-16 h-1 bg-green-500/80 rounded-full shadow-[0_0_5px_rgba(34,197,94,0.8)]"></div>
+<div class="w-10 h-1 bg-green-500/50 rounded-full"></div>
+</div>
+<div class="absolute bottom-4 left-4">
+<p class="text-xs text-green-400 font-mono mb-1">SCANNING COMPLETE</p>
+<p class="text-white font-bold text-lg">原始数据</p>
+</div>
+</div>
+</div>
+<div class="absolute bottom-10 right-4 z-30 w-64 md:w-80 glass-card-tech p-2 rounded-2xl shadow-2xl transform rotate-6 hover:rotate-0 transition-transform duration-500 border border-tech-orange/50 hover:border-tech-orange hover:shadow-neon-orange">
+<div class="aspect-[4/5] rounded-xl overflow-hidden bg-gray-900 relative group">
+<div class="absolute inset-0 bg-tech-orange/10 z-10 mix-blend-overlay"></div>
+<img alt="Generated AI Pet" class="w-full h-full object-cover" data-alt="Cyberpunk cat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEcHXVlB4CVP--kvw40tFj3lNV8LqriNUER7kcl78JA8ZDUgVUcSBKkCrv3Ydsm2RV6-vanW96ZVw5bE5WkXFauKBq2jjzHlxpeeWM55bUlGyBVjd2mrtHBLLobLNw_ZR4aQqonNg4nW0YH1SvOMdOQzzKOgTtFDd0LxAGJOfZIc1yNfqLIQxWOEHPG_hLocOpbEob63FbHaLAkAGcB4Q7ZIqyF8bR97eJr_w1Ui1uY0puaJi0ZtIW64mbAXKUrT8K4MBsm5pB8gU"/>
+<div class="absolute top-3 right-3 z-20 bg-black/60 backdrop-blur-md border border-tech-orange/50 text-tech-orange text-xs px-2 py-1 rounded font-bold uppercase tracking-wider shadow-lg">
+                                    AI Generated
+                                </div>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent via-white/5 to-transparent opacity-30 translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-1000 z-20 pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black/80 to-transparent z-20">
+<div class="flex justify-between items-center">
+<div>
+<p class="text-xs text-tech-orange font-mono mb-0.5">STYLE: CYBERPUNK</p>
+<p class="text-white font-bold">机械纪元 · 喵</p>
+</div>
+<button class="text-tech-orange hover:text-white transition-colors">
+<span class="material-icons">download_for_offline</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 bg-tech-bg-deep relative border-t border-gray-900">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="text-center mb-20">
+<h2 class="text-3xl lg:text-4xl font-bold font-display text-white mb-4 text-glow">神经连接 · 四步重塑</h2>
+<p class="text-gray-400 max-w-2xl mx-auto font-light">无需任何 3D 建模知识，AI 算法将在云端为您完成复杂的渲染计算</p>
+</div>
+<div class="relative">
+<div class="hidden lg:block absolute top-12 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-tech-purple/30 to-transparent -z-10"></div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+<div class="relative group cursor-pointer">
+<div class="w-24 h-24 mx-auto bg-tech-card rounded-2xl rotate-45 flex items-center justify-center mb-10 shadow-lg border border-gray-800 group-hover:border-tech-purple group-hover:shadow-neon transition-all duration-300">
+<div class="-rotate-45">
+<span class="material-icons text-4xl text-gray-400 group-hover:text-tech-purple transition-colors">upload_file</span>
+</div>
+</div>
+<div class="text-center px-4">
+<h3 class="text-xl font-bold text-white mb-2 group-hover:text-tech-purple transition-colors">上传源数据</h3>
+<p class="text-sm text-gray-500 leading-relaxed group-hover:text-gray-400">上传您宠物的多角度照片，系统将自动识别骨骼结构。</p>
+</div>
+</div>
+<div class="relative group cursor-pointer">
+<div class="w-24 h-24 mx-auto bg-tech-card rounded-2xl rotate-45 flex items-center justify-center mb-10 shadow-lg border border-gray-800 group-hover:border-tech-orange group-hover:shadow-neon-orange transition-all duration-300">
+<div class="-rotate-45">
+<span class="material-icons text-4xl text-gray-400 group-hover:text-tech-orange transition-colors">tune</span>
+</div>
+</div>
+<div class="text-center px-4">
+<h3 class="text-xl font-bold text-white mb-2 group-hover:text-tech-orange transition-colors">风格参数化</h3>
+<p class="text-sm text-gray-500 leading-relaxed group-hover:text-gray-400">选择渲染引擎参数：皮克斯光照、赛博霓虹或超写实纹理。</p>
+</div>
+</div>
+<div class="relative group cursor-pointer">
+<div class="w-24 h-24 mx-auto bg-tech-card rounded-2xl rotate-45 flex items-center justify-center mb-10 shadow-lg border border-gray-800 group-hover:border-tech-purple group-hover:shadow-neon transition-all duration-300">
+<div class="-rotate-45">
+<span class="material-icons text-4xl text-gray-400 group-hover:text-tech-purple transition-colors">memory</span>
+</div>
+</div>
+<div class="text-center px-4">
+<h3 class="text-xl font-bold text-white mb-2 group-hover:text-tech-purple transition-colors">云端演算</h3>
+<p class="text-sm text-gray-500 leading-relaxed group-hover:text-gray-400">高性能 GPU 集群实时渲染，生成可交互的 3D 全息模型。</p>
+</div>
+</div>
+<div class="relative group cursor-pointer">
+<div class="w-24 h-24 mx-auto bg-tech-card rounded-2xl rotate-45 flex items-center justify-center mb-10 shadow-lg border border-gray-800 group-hover:border-blue-500 group-hover:shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-all duration-300">
+<div class="-rotate-45">
+<span class="material-icons text-4xl text-gray-400 group-hover:text-blue-500 transition-colors">widgets</span>
+</div>
+</div>
+<div class="text-center px-4">
+<h3 class="text-xl font-bold text-white mb-2 group-hover:text-blue-500 transition-colors">实体化输出</h3>
+<p class="text-sm text-gray-500 leading-relaxed group-hover:text-gray-400">将数字资产转化为实体周边，或导出至 AR 增强现实应用。</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 bg-tech-bg-dark border-t border-gray-900">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between items-end mb-12 border-b border-gray-800 pb-6">
+<div>
+<h2 class="text-3xl font-bold font-display text-white">社区节点精选</h2>
+<p class="text-gray-500 mt-2 font-mono text-sm">USER_GENERATED_CONTENT // TOP_RATED</p>
+</div>
+<a class="hidden md:flex items-center text-tech-purple hover:text-white font-medium transition-colors" href="#">
+                    进入矩阵画廊 <span class="material-icons ml-1 text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+<div class="group relative rounded-xl overflow-hidden bg-tech-card border border-gray-800 hover:border-tech-purple transition-all duration-300 hover:shadow-neon">
+<div class="aspect-[4/3] overflow-hidden relative">
+<img alt="Space Dog" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 filter saturate-150" data-alt="Space dog" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc22dPpz62gbqDGrLCVbxiZ6NNfXEJMqqJj90oXii2P8sFRgVIucOzJU8UY32UhkIGJ5cxUF2dACQmNx_g7ii_YqGxlyD0Op-JQTOeFM3owG-hFyQFJqnz2VczEhQruWI7fKCEIGpA2rQZBdG_CXVA7iY0cBQlNR3CZHaOpEnuROGQ45oo80snaqCCxcyYj_mup3ng0tDk37uYbaOcbM5VawUtKkH2H-mh9lMRsfwm-in8VJy2QSfbfKImUU8hP4R5vkFE4DjkLPw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-center mb-3">
+<h3 class="font-bold text-white text-lg tracking-wide">星际行者 · 豆豆</h3>
+<span class="text-[10px] uppercase font-bold bg-purple-900/50 text-purple-300 border border-purple-700/50 px-2 py-0.5 rounded backdrop-blur-sm">Rare</span>
+</div>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-800/50">
+<div class="flex items-center gap-2">
+<div class="p-0.5 bg-gradient-to-tr from-tech-purple to-blue-500 rounded-full">
+<img alt="User Avatar" class="w-6 h-6 rounded-full border border-black" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDz4UPFabeR4m1LlzPIz-R2plUhLyfaV6VEpjGbIZq09IB77jAtA4BFgafzRnvcnrBxZRn2Yzq1YJ5VzpTHnFHGyDsi9kLfP_7vT7PCM-bmwYhuWZpnhtCzJDjX9oSjhqVLLKAOMHmT2RbjuBhphRPFUYLQaQ3yG-UjgNiBdXwrkRoylaCJsUYPl5yJmKqPYdunOPtBf14eY7XqhxLfvz9nluLgizWQH--Idhp44wbG53ZYl5bWoRTC4jV2X9YYo_tHIF4qaGSNVaA"/>
+</div>
+<span class="text-xs text-gray-400 font-mono">@SarahLi</span>
+</div>
+<div class="flex items-center text-gray-500 text-xs gap-3">
+<span class="flex items-center gap-1 hover:text-red-500 transition-colors cursor-pointer"><i class="material-icons text-[14px]">favorite</i> 1.2k</span>
+</div>
+</div>
+</div>
+</div>
+<div class="group relative rounded-xl overflow-hidden bg-tech-card border border-gray-800 hover:border-tech-orange transition-all duration-300 hover:shadow-neon-orange">
+<div class="aspect-[4/3] overflow-hidden relative">
+<img alt="Royal Cat" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 filter contrast-125" data-alt="Royal cat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAU3t89nyr8WUrIevEAnx2G1sTXLcpeHpcL2mDBFtBVcjqqG8M-paPMHEZ5ILALVmwIRdlTeVDVM5GKC-Efo79zoB4x94xijo64MG2G2MPnYMK_QjLY-Pln76JU16aH_VKEBRpKXgWVOb9qmcLrDdbkC5xt8UwObz1LvP_ulKjAwxYSa7Mwou9fznjnsu9PoVgnTgfZooWRgxxdj0BA7_lwcZkUdvD_6tvF5gwyPovh3A0hfS0V_sWj2ru5205tbGVXkRujuH5JmKQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-center mb-3">
+<h3 class="font-bold text-white text-lg tracking-wide">帝国元帅 · 咪咪</h3>
+<span class="text-[10px] uppercase font-bold bg-orange-900/50 text-orange-300 border border-orange-700/50 px-2 py-0.5 rounded backdrop-blur-sm">Legendary</span>
+</div>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-800/50">
+<div class="flex items-center gap-2">
+<div class="p-0.5 bg-gradient-to-tr from-tech-orange to-yellow-500 rounded-full">
+<img alt="User Avatar" class="w-6 h-6 rounded-full border border-black" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJgPiSIFkKHx3T8uxeNN8kdjwhfxs1mPhGk-cSks8ey7JTHFI4JJKZjJ2oKkyywE03JhLAoDtQa6nuDD55vX_6N5UcIIGN_BhZ0Omfp8Ozg7kZlyKuo1K9TdpYmI831N6YXCSQu51yLuaRHIyMgUnMgK5a6ue5VFL8eDvv4I0z0LDsBnykABEtwiF9xCuvQnj8eEbBI8wVLKba2JeM3wn600oeFxETPw6Hopwp9eFg8YfykebPQ8dI5_ylABBCcPJmWkcOSP2KeHU"/>
+</div>
+<span class="text-xs text-gray-400 font-mono">@JasonW</span>
+</div>
+<div class="flex items-center text-gray-500 text-xs gap-3">
+<span class="flex items-center gap-1 hover:text-red-500 transition-colors cursor-pointer"><i class="material-icons text-[14px]">favorite</i> 856</span>
+</div>
+</div>
+</div>
+</div>
+<div class="group relative rounded-xl overflow-hidden bg-tech-card border border-gray-800 hover:border-blue-500 transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.4)]">
+<div class="aspect-[4/3] overflow-hidden relative">
+<img alt="Poly Cat" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 filter brightness-110" data-alt="Poly cat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtyDMQ4cciru7IRrifshnelL6m4N2V63pwaPyftQKopeq442Z8CK047joik51CqA063jIamRJu1Fk2Zhi7w8K70Wr1kqnVj_Uy-rmpkxgI5ElehyfH82QaRPBjU3daaBpjr7JHMHaIq5lvlwIqlHOtq0dB2_N6ugsBjeu6Emk1t2C3zbIFwBPyTvfmtNbqJ4bzkAqzIQmsHrrtJpeNgetYRSxGJZ0mH4WYCIgeGYyxV2RgSbizh8z35Pe3YMm5LAW0G_JWh3B7GzA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-center mb-3">
+<h3 class="font-bold text-white text-lg tracking-wide">低多边形 · 橘子</h3>
+<span class="text-[10px] uppercase font-bold bg-blue-900/50 text-blue-300 border border-blue-700/50 px-2 py-0.5 rounded backdrop-blur-sm">Epic</span>
+</div>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-800/50">
+<div class="flex items-center gap-2">
+<div class="p-0.5 bg-gradient-to-tr from-blue-500 to-cyan-400 rounded-full">
+<img alt="User Avatar" class="w-6 h-6 rounded-full border border-black" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB947T9M1KSOgA4BEOa31eCSIr7H_NsbD90834saLCQe5V0N0Gof0wiz_I5dA6Bkd-K1ft7hQCnw0Ef5Kfz3TkbQsP6R-ei2suentUGLXY7pXWkHxUbyp1FVTbGMS1H_ObxDPwNuOzjQh8KCFVuiw3wY6OTmb4UKLJII_HwUbIxWkXqqheYbJ0sWEZp9lVOVX2rkVODlMo_YwUnL5SA-Cbuhmx5GTIIB2DDXqmVAUDHMKboWLzDInUvUeA_JuWcm-Ikosqsc_dm9F8"/>
+</div>
+<span class="text-xs text-gray-400 font-mono">@Chen_Design</span>
+</div>
+<div class="flex items-center text-gray-500 text-xs gap-3">
+<span class="flex items-center gap-1 hover:text-red-500 transition-colors cursor-pointer"><i class="material-icons text-[14px]">favorite</i> 2.1k</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-10 text-center md:hidden">
+<a class="inline-flex items-center text-tech-purple hover:text-white font-medium" href="#">
+                    更多作品 <span class="material-icons ml-1 text-sm">arrow_forward</span>
+</a>
+</div>
+</div>
+</section>
+<section class="py-24 bg-tech-bg-deep border-t border-gray-900">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="bg-gradient-to-r from-tech-card to-[#120820] rounded-3xl overflow-hidden relative border border-gray-800 shadow-2xl">
+<div class="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-tech-purple/10 rounded-full blur-3xl"></div>
+<div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-tech-orange/10 rounded-full blur-3xl"></div>
+<div class="grid md:grid-cols-2 items-center">
+<div class="p-8 md:p-12 lg:p-16 relative z-10">
+<span class="text-tech-orange font-bold tracking-[0.2em] text-xs uppercase mb-4 block flex items-center gap-2">
+<span class="w-2 h-2 bg-tech-orange rounded-full animate-ping"></span>
+                        实体化协议
+                    </span>
+<h2 class="text-3xl lg:text-5xl font-bold font-display text-white mb-6">把爱带进 <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">物理世界</span></h2>
+<p class="text-lg text-gray-400 mb-8 font-light leading-relaxed">
+                            先进的 3D 打印与制造工艺，将您生成的数字宠物转化为高精度的物理周边。从 UV 打印手机壳到光固化树脂手办，触手可及的科技温度。
+                        </p>
+<button class="bg-white text-black hover:bg-gray-200 px-8 py-3 rounded-lg font-bold inline-flex items-center gap-2 transition-all hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+<span class="material-icons">shopping_bag</span>
+                            探索周边商店
+                        </button>
+</div>
+<div class="relative h-80 md:h-full min-h-[450px]">
+<img alt="Merchandise Preview" class="absolute inset-0 w-full h-full object-cover md:rounded-l-3xl mix-blend-normal opacity-90" data-alt="Merch" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKahf4SE_-SLGojmO-dzLhFYs2bm1AKfcDuhDOxCyjmYlkt3vqLjyjErF8HPJAK7__FrIdx68fUEMHKK7iWKoyhAeplxAn0wRYb7mrJC3QQKpNvbMoXzRfdSxzCCrasCoCmpDpvdBSjUq5BItjzEXsFwb6DgmYvlwRGkQ_j1bVQtotAw-t-EtMe5jAYM_L5VhA6uaSB9g4NYA_oGFUh5YOaoppmMvLT0ybl3PAV7hyC-NbHeh0cCX5priQRPRoHEGUtXRoK2FYcRo"/>
+<div class="absolute inset-0 bg-gradient-to-t from-tech-bg-deep via-transparent to-transparent md:bg-gradient-to-r md:from-tech-card md:via-tech-card/50 md:to-transparent"></div>
+<div class="absolute bottom-6 right-6 bg-black/70 backdrop-blur-md border border-gray-700 px-3 py-1.5 rounded text-xs text-white font-mono hidden md:block">
+                        ITEM: RESIN_FIGURE_V2
+                    </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<footer class="bg-[#030105] border-t border-gray-900 pt-16 pb-8 mt-auto">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+<div class="col-span-1 md:col-span-1">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-icons text-tech-purple text-2xl">smart_toy</span>
+<span class="font-display font-bold text-xl text-white">PetForge</span>
+</div>
+<p class="text-sm text-gray-500 mb-6 font-light">
+                        PetForge Network © 2023.<br/>
+                        连接碳基生命与硅基灵魂的桥梁。
+                    </p>
+<div class="flex space-x-4">
+<a class="text-gray-500 hover:text-white transition-colors" href="#"><i class="material-icons text-xl">facebook</i></a>
+<a class="text-gray-500 hover:text-white transition-colors" href="#"><i class="material-icons text-xl">camera_alt</i></a>
+<a class="text-gray-500 hover:text-white transition-colors" href="#"><i class="material-icons text-xl">alternate_email</i></a>
+</div>
+</div>
+<div>
+<h4 class="font-bold text-white mb-6 uppercase text-sm tracking-wider text-glow-purple">产品矩阵</h4>
+<ul class="space-y-3 text-sm text-gray-500">
+<li><a class="hover:text-tech-purple transition-colors" href="#">AI 创世引擎</a></li>
+<li><a class="hover:text-tech-purple transition-colors" href="#">3D 资产库</a></li>
+<li><a class="hover:text-tech-purple transition-colors" href="#">物理制造</a></li>
+<li><a class="hover:text-tech-purple transition-colors" href="#">企业级 API</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-white mb-6 uppercase text-sm tracking-wider text-glow-purple">开发者资源</h4>
+<ul class="space-y-3 text-sm text-gray-500">
+<li><a class="hover:text-tech-purple transition-colors" href="#">文档中心</a></li>
+<li><a class="hover:text-tech-purple transition-colors" href="#">社区画廊</a></li>
+<li><a class="hover:text-tech-purple transition-colors" href="#">技术博客</a></li>
+<li><a class="hover:text-tech-purple transition-colors" href="#">开源组件</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-white mb-6 uppercase text-sm tracking-wider text-glow-purple">关于</h4>
+<ul class="space-y-3 text-sm text-gray-500">
+<li><a class="hover:text-tech-purple transition-colors" href="#">未来愿景</a></li>
+<li><a class="hover:text-tech-purple transition-colors" href="#">加入飞船</a></li>
+<li><a class="hover:text-tech-purple transition-colors" href="#">联系信号</a></li>
+<li><a class="hover:text-tech-purple transition-colors" href="#">隐私协议</a></li>
+</ul>
+</div>
+</div>
+<div class="border-t border-gray-900/50 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-xs text-gray-600 font-mono">© 2023 PetForge Inc. All systems operational.</p>
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+</span>
+<span class="text-xs text-gray-500 font-mono">SYSTEM_ONLINE</span>
+</div>
+</div>
+</div>
+</footer>
+
+</body></html>

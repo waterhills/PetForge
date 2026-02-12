@@ -1,0 +1,146 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 用户表
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  avatar        String?
+  credits       Int       @default(100) // 生成点数
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // 关联关系
+  orders        Order[]
+  petIPs        PetIP[]
+  cartItems     CartItem[]
+}
+
+// 宠物 IP 表
+model PetIP {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String    // 宠物名称
+  style         String    // 生成风格: pixar, clay, cyber, line
+  rarity        String    @default("Common") // 稀有度: Common, Rare, Epic, Legendary
+
+  // 图片路径
+  originalImage String    // 原始照片路径
+  generatedImage String    // AI 生成图路径
+  model3D       String?   // 3D 模型文件路径
+
+  // 社区互动
+  likes         Int       @default(0)
+  isPublic      Boolean   @default(false) // 是否公开到社区
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // 关联
+  cartItems     CartItem[]
+}
+
+// 购物车表
+model CartItem {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  petIpId       String?
+  petIp         PetIP?    @relation(fields: [petIpId], references: [id], onDelete: SetNull)
+
+  productType   String    // 产品类型: figurine, tshirt, wallpaper
+  productName   String    // 产品名称
+  price          Float
+
+  // 规格配置
+  size          String?   // 尺寸
+  baseStyle      String?   // 底座样式
+  quantity       Int       @default(1)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// 订单表
+model Order {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  orderNumber   String    @unique // 订单号
+  totalAmount   Float
+  discountAmount Float     @default(0)
+
+  status        String    @default("pending") // pending, paid, processing, shipped, completed, cancelled
+  paymentMethod String?   // wechat, alipay, card
+
+  // 收货信息
+  receiverName  String?
+  receiverPhone String?
+  receiverAddress String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // 关联
+  items         OrderItem[]
+}
+
+// 订单商品表
+model OrderItem {
+  id            String    @id @default(cuid())
+  orderId       String
+  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productType   String    // figurine, tshirt, wallpaper
+  productName   String
+  price          Float
+  quantity      Int
+  specifications String?  // JSON 字符串存储规格信息
+
+  createdAt     DateTime  @default(now())
+}
+
+// 风格配置表
+model Style {
+  id            String    @id @default(cuid())
+  name          String    @unique // 皮克斯3D, 粘土世界, 赛博萌宠, 极简线条
+  displayName   String
+  description   String
+  previewImage  String    // 预览图片 URL
+  price         Int       @default(5) // 消耗点数
+  isActive      Boolean   @default(true)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// 社区帖子表
+model CommunityPost {
+  id            String    @id @default(cuid())
+
+  title         String
+  description   String?
+  images        String    // JSON 数组存储图片 URL
+  tags          String    // JSON 数组存储标签
+  rarity        String?
+
+  likes         Int       @default(0)
+  bookmarks     Int       @default(0)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}

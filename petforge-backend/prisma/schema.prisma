@@ -1,0 +1,159 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String             @id @default(cuid())
+  email            String             @unique
+  password         String?
+  name             String?
+  avatar           String?
+  phone            String?
+  bio              String?
+  credits          Int                @default(100)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  orders           Order[]
+  petIPs           PetIP[]
+  cartItems        CartItem[]
+  addresses        Address[]
+  pointTransactions PointTransaction[]
+  generations       Generation[] // New: Track AI generations for user
+}
+
+
+model PetIP {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  style         String
+  rarity        String    @default("Common")
+  originalImage String?   // Make optional - user may not upload original photo
+  generatedImage String
+  model3D       String?   // For 3D model file (GLB/GLTF)
+  likes         Int       @default(0)
+  isPublic      Boolean   @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  cartItems     CartItem[]
+  generations   Generation[] // One PetIP can have many Generations
+}
+
+model CartItem {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  petIpId       String?
+  petIp         PetIP?    @relation(fields: [petIpId], references: [id])
+  productType   String
+  productName   String
+  price         Float
+  size          String?
+  baseStyle     String?
+  quantity      Int       @default(1)
+  createdAt     DateTime   @default(now())
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  orderNumber     String      @unique
+  totalAmount     Float
+  receiverName    String
+  receiverPhone   String
+  receiverAddress String
+  paymentMethod   String
+  status          String      @default("pending")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id             String   @id @default(cuid())
+  orderId        String
+  order          Order    @relation(fields: [orderId], references: [id])
+  productType    String
+  productName    String
+  price          Float
+  quantity       Int
+  specifications String
+}
+
+model Generation {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  petIpId       String?
+  petIp         PetIP?    @relation(fields: [petIpId], references: [id])
+  type          String   // "2d" for image, "3d" for model
+  status        String   @default("pending") // pending, processing, completed, failed
+  prompt        String   // JSON string of generation parameters
+  inputImage    String? // URL or base64 of input image
+  resultUrl     String? // URL of generated result
+  resultData    String? // JSON string of additional result data
+  errorMessage  String?
+  cost          Int      @default(0) // Credits cost
+  createdAt     DateTime   @default(now())
+  completedAt   DateTime? // When generation completed
+}
+
+model CommunityPost {
+  id         String   @id @default(cuid())
+  userId     String
+  petIpId    String?
+  content    String
+  images     String
+  likes      Int       @default(0)
+  isPublic   Boolean   @default(true)
+  createdAt  DateTime   @default(now())
+}
+
+model Address {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  receiverName String
+  phone        String
+  province     String
+  city         String
+  district     String
+  detail       String
+  isDefault    Boolean   @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model PointTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  type        String   // 'earn', 'spend', 'refund', 'admin_add', 'admin_deduct'
+  amount      Int      // positive for earn/refund, negative for spend
+  balance     Int      // balance after this transaction
+  description String
+  orderId     String? // related order if applicable
+  createdAt   DateTime   @default(now())
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  orderId         String
+  transactionId   String   @unique // unique transaction number
+  amount          Float
+  paymentMethod   String
+  status          String      @default("pending") // pending, success, failed, refunded
+  paidAt          DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}

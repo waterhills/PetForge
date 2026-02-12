@@ -1,0 +1,390 @@
+// API Configuration
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+class ApiClient {
+  private baseUrl: string;
+  private token: string | null = null;
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+
+    // Load token from localStorage on client side
+    if (typeof window !== 'undefined') {
+      this.token = localStorage.getItem('auth_token');
+    }
+  }
+
+  setToken(token: string) {
+    this.token = token;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+    }
+  }
+
+  clearToken() {
+    this.token = null;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+    }
+  }
+
+  private getHeaders(includeAuth = false): HeadersInit {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (includeAuth && this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    return headers;
+  }
+
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    includeAuth = false
+  ): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    const config: RequestInit = {
+      ...options,
+      headers: {
+        ...this.getHeaders(includeAuth),
+        ...options.headers,
+      },
+    };
+
+    const response = await fetch(url, config);
+    const data = await response.json();
+
+    if (!response.ok) {
+      // Handle Zod validation errors (array of error objects)
+      if (Array.isArray(data.error)) {
+        const errorMessages = data.error.map((e: any) => e.message || e).join(', ');
+        throw new Error(errorMessages);
+      }
+      throw new Error(data.error || 'Request failed');
+    }
+
+    return data;
+  }
+
+  // Auth endpoints
+  async register(email: string, password: string, name?: string) {
+    return this.request('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, name }),
+    });
+  }
+
+  async login(email: string, password: string) {
+    const data = await this.request<{ success: boolean; data: { user: any; token: string } }>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (data.success && data.data.token) {
+      this.setToken(data.data.token);
+    }
+
+    return data;
+  }
+
+  async getCurrentUser() {
+    return this.request('/api/auth/me', {}, true);
+  }
+
+  // Upload endpoints
+  async uploadPetPhoto(file: File, name: string, style: string, userId?: string) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('name', name);
+    formData.append('style', style);
+    if (userId) formData.append('userId', userId);
+
+    const response = await fetch(`${this.baseUrl}/api/upload`, {
+      method: 'POST',
+      headers: this.token ? { Authorization: `Bearer ${this.token}` } : {},
+      body: formData,
+    });
+
+    return await response.json();
+  }
+
+  // PetIP endpoints
+  async createPetIP(data: {
+    name: string;
+    style: string;
+    originalImage?: string;
+    generatedImage: string;
+    rarity?: string;
+  }) {
+    return this.request('/api/petips', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, true);
+  }
+
+  async getPetIPs(params?: { page?: number; limit?: number; userId?: string; style?: string; rarity?: string }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) searchParams.append(key, String(value));
+      });
+    }
+    return this.request(`/api/petips?${searchParams.toString()}`, {}, true);
+  }
+
+  async getPetIP(id: string) {
+    return this.request(`/api/petips/${id}`, {}, true);
+  }
+
+  async likePetIP(id: string) {
+    return this.request(`/api/petips/${id}/like`, { method: 'POST' }, true);
+  }
+
+  // Cart endpoints
+  async getCart() {
+    return this.request('/api/cart', {}, true);
+  }
+
+  async addToCart(item: {
+    petIpId?: string;
+    productType: string;
+    productName: string;
+    price: number;
+    size?: string;
+    baseStyle?: string;
+    quantity: number;
+    originalImage?: string;
+    generatedImage?: string;
+  }) {
+    return this.request('/api/cart', {
+      method: 'POST',
+      body: JSON.stringify(item),
+    }, true);
+  }
+
+  async removeFromCart(itemId: string) {
+    return this.request(`/api/cart/${itemId}`, { method: 'DELETE' }, true);
+  }
+
+  async updateCartItemQuantity(itemId: string, quantity: number) {
+    return this.request(`/api/cart/${itemId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ quantity }),
+    }, true);
+  }
+
+  // Order endpoints
+  async getOrders(params?: { page?: number; limit?: number; status?: string }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) searchParams.append(key, String(value));
+      });
+    }
+    return this.request(`/api/orders?${searchParams.toString()}`, {}, true);
+  }
+
+  async getOrder(id: string) {
+    return this.request(`/api/orders/${id}`, {}, true);
+  }
+
+  async createOrder(orderData: {
+    items: Array<{
+      productType: string;
+      productName: string;
+      price: number;
+      quantity: number;
+      size?: string;
+      baseStyle?: string;
+    }>;
+    receiverName: string;
+    receiverPhone: string;
+    receiverAddress: string;
+    paymentMethod: string;
+  }) {
+    return this.request('/api/orders', {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+    }, true);
+  }
+
+  async updateOrderStatus(orderId: string, status: string) {
+    return this.request(`/api/orders/${orderId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  // Admin endpoints
+  async getStats() {
+    return this.request('/api/admin/stats', {}, true);
+  }
+
+  async getAllUsers() {
+    return this.request('/api/admin/users', {}, true);
+  }
+
+  async getAllPetIPs() {
+    return this.request('/api/admin/petips', {}, true);
+  }
+
+  async getAllOrders() {
+    return this.request('/api/admin/orders', {}, true);
+  }
+
+  // Payment endpoints
+  async createPayment(orderId: string, paymentMethod: string, useCredits?: boolean, creditsAmount?: number) {
+    return this.request('/api/payments/create', {
+      method: 'POST',
+      body: JSON.stringify({ orderId, paymentMethod, useCredits, creditsAmount }),
+    }, true);
+  }
+
+  async confirmPayment(paymentId: string) {
+    return this.request('/api/payments/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ paymentId }),
+    }, true);
+  }
+
+  // User profile endpoints
+  async updateProfile(data: { name?: string; email?: string; phone?: string; avatar?: string; bio?: string }) {
+    return this.request('/api/user/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }, true);
+  }
+
+  async getUserProfile() {
+    return this.request('/api/user/profile', {}, true);
+  }
+
+  async uploadAvatar(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${this.baseUrl}/api/user/avatar`, {
+      method: 'POST',
+      headers: this.token ? { Authorization: `Bearer ${this.token}` } : {},
+      body: formData,
+    });
+
+    return await response.json();
+  }
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    return this.request('/api/user/password', {
+      method: 'PATCH',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }, true);
+  }
+
+  // Address endpoints
+  async getAddresses() {
+    return this.request('/api/addresses', {}, true);
+  }
+
+  async addAddress(address: {
+    receiverName: string;
+    receiverPhone: string;
+    province: string;
+    city: string;
+    district: string;
+    detailAddress: string;
+    isDefault?: boolean;
+  }) {
+    return this.request('/api/addresses', {
+      method: 'POST',
+      body: JSON.stringify(address),
+    }, true);
+  }
+
+  async updateAddress(id: string, address: {
+    receiverName?: string;
+    receiverPhone?: string;
+    province?: string;
+    city?: string;
+    district?: string;
+    detailAddress?: string;
+    isDefault?: boolean;
+  }) {
+    return this.request('/api/addresses/' + id, {
+      method: 'PATCH',
+      body: JSON.stringify(address),
+    }, true);
+  }
+
+  async deleteAddress(id: string) {
+    return this.request('/api/addresses/' + id, {
+      method: 'DELETE',
+    }, true);
+  }
+
+  async setDefaultAddress(id: string) {
+    return this.request('/api/addresses/' + id + '/default', {
+      method: 'POST',
+    }, true);
+  }
+
+  // Points endpoints
+  async getPointsBalance() {
+    return this.request('/api/points', {}, true);
+  }
+
+  async getPointsHistory(params?: { page?: number; limit?: number }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) searchParams.append(key, String(value));
+      });
+    }
+    return this.request('/api/points/history?' + searchParams.toString(), {}, true);
+  }
+
+  // AI Generation endpoints
+  async queueGeneration(params: {
+    type?: 'image' | '3d';
+    style?: string;
+    petName?: string;
+    customPrompt?: string;
+    inputImage?: string;
+    petIpId?: string;
+  }) {
+    return this.request('/api/generation/queue-comfyui', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    }, true);
+  }
+
+  async checkGenerationStatus(taskId: string) {
+    return this.request(`/api/generation/status-comfyui/${taskId}`, {}, true);
+  }
+
+  async getGenerationHistory(filters?: {
+    page?: number;
+    limit?: number;
+    type?: 'image' | '3d';
+  }) {
+    const searchParams = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) searchParams.append(key, String(value));
+      });
+    }
+    return this.request('/api/generation/history?' + searchParams.toString(), {}, true);
+  }
+
+  async cancelGeneration(taskId: string) {
+    return this.request(`/api/generation/${taskId}`, {
+      method: 'DELETE',
+    }, true);
+  }
+}
+
+// Create singleton instance
+const api = new ApiClient(API_BASE_URL);
+
+export default api;
