@@ -94,6 +94,19 @@ class ApiClient {
     return this.request('/api/auth/me', {}, true);
   }
 
+  // 添加商品到购物车（新端点）
+  async addToCart(petIpId: string, quantity: number = 1, productType?: string, productName?: string, price?: number, size?: string, baseStyle?: string) {
+    return this.request('/api/cart/add', {
+      method: 'POST',
+      body: JSON.stringify({ petIpId, quantity, productType, productName, price, size, baseStyle }),
+    }, true);
+  }
+
+  // 获取管理员仪表板（新端点）
+  async getAdminDashboard() {
+    return this.request('/api/admin/dashboard', {}, true);
+  }
+
   // Upload endpoints
   async uploadPetPhoto(file: File, name: string, style: string, userId?: string) {
     const formData = new FormData();
