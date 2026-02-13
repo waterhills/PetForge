@@ -1,0 +1,229 @@
+{
+  "style": "clay",
+  "name": "Clay Animation Style",
+  "description": "Handcrafted claymation characters with stop-motion aesthetics",
+  "version": "1.0",
+  "author": "PetForge AI",
+  "lastUpdated": "2026-02-13",
+
+  "positivePrompts": {
+    "base": [
+      "handcrafted claymation character",
+      "stop motion style",
+      "polymer clay texture",
+      "handmade feel",
+      "adorable design",
+      "playful appearance",
+      "bright colors",
+      "simple shapes",
+      "visible clay texture",
+      "warm lighting"
+    ],
+
+    "enhanced": [
+      "professional clay animation",
+      "detailed clay texture",
+      "handcrafted details",
+      "natural clay sheen",
+      "soft lighting",
+      "expressive clay features",
+      "textured surfaces",
+      "organic shapes",
+      "childlike charm",
+      "artistic clay art"
+    ],
+
+    "minimal": [
+      "clay character",
+      "simple design",
+      "basic shapes",
+      "soft colors",
+      "clean clay texture"
+    ],
+
+    "emotional": {
+      "happy": "joyful expression, bouncy pose, cheerful",
+      "sleepy": "sleepy clay character, relaxed pose, soft",
+      "curious": "inquisitive look, tilted head, attentive",
+      "excited": "energetic pose, bouncy movement, lively",
+      "calm": "serene expression, peaceful pose, gentle"
+    },
+
+    "poses": {
+      "sitting": "sitting clay figure, stable pose",
+      "standing": "standing clay character, proud posture",
+      "lying": "lying down clay figure, cozy position",
+      "playing": "playing with object, active pose",
+      "jumping": "jumping action, dynamic movement"
+    },
+
+    "environments": {
+      "studio": "studio lighting, clean background",
+      "indoor": "cozy indoor setting, warm atmosphere",
+      "outdoor": "natural outdoor scene, daylight",
+      "fantasy": "dreamy fantasy world, magical setting",
+      "simple": "minimal background, focus on character"
+    },
+
+    "materials": {
+      "polymer": "polymer clay texture, smooth finish",
+      "plasticine": "plasticine clay, soft texture",
+      "modeling": "modeling clay, handcrafted feel",
+      "air_dry": "air dry clay, natural texture",
+      "sculpey": "Sculpey clay, professional finish"
+    },
+
+    "textures": {
+      "glossy": "glossy clay finish, reflective surface",
+      "matte": "matte clay texture, soft finish",
+      "textured": "textured clay surface, detailed texture",
+      "smooth": "smooth clay surface, polished finish"
+    }
+  },
+
+  "negativePrompts": {
+    "base": [
+      "realistic",
+      "photorealistic",
+      "digital art",
+      "3D render",
+      "smooth surface",
+      "perfect",
+      "digital",
+      "computer generated",
+      "vector art",
+      "pixel art",
+      "flat design"
+    ],
+
+    "quality": [
+      "blurry",
+      "low quality",
+      "pixelated",
+      "compression artifacts",
+      "noise",
+      "grainy",
+      "oversaturated",
+      "harsh lighting"
+    ],
+
+    "style": [
+      "realistic",
+      "photorealistic",
+      "3D rendering",
+      "digital illustration",
+      "anime",
+      "cartoon",
+      "flat",
+      "digital art",
+      "computer graphics"
+    ],
+
+    "texture": [
+      "perfectly smooth",
+      "glass surface",
+      "metallic",
+      "plastic",
+      "synthetic",
+      "artificial"
+    ]
+  },
+
+  "parameters": {
+    "styleWeights": {
+      "clay": 1.0,
+      "stop_motion": 0.8,
+      "handmade": 0.7,
+      "animation": 0.6
+    },
+
+    "recommendedSettings": {
+      "steps": 25,
+      "cfg": 8,
+      "sampler": "euler",
+      "scheduler": "normal",
+      "resolution": "512x512"
+    },
+
+    "intensityLevels": {
+      "low": {
+        "cfg": 6,
+        "steps": 20,
+        "textureMultiplier": 0.8
+      },
+      "medium": {
+        "cfg": 8,
+        "steps": 25,
+        "textureMultiplier": 1.0
+      },
+      "high": {
+        "cfg": 10,
+        "steps": 30,
+        "textureMultiplier": 1.2
+      }
+    }
+  },
+
+  "modifiers": {
+    "colors": {
+      "bright": "bright colors, vibrant hues",
+      "pastel": "soft pastel colors, gentle tones",
+      "warm": "warm color palette, golden hues",
+      "cool": "cool colors, soft blues",
+      "monochrome": "monochrome clay sculpture"
+    },
+
+    "lighting": {
+      "soft": "soft lighting, gentle shadows",
+      "warm": "warm lighting, golden tones",
+      "dramatic": "dramatic lighting, strong contrast",
+      "studio": "studio lighting, professional"
+    },
+
+    "mood": {
+      "cheerful": "cheerful expression, bright colors",
+      "calm": "calm demeanor, soft colors",
+      "playful": "playful pose, vibrant colors",
+      "sleepy": "sleepy expression, warm lighting",
+      "mischievous": "mischievous look, detailed features"
+    }
+  },
+
+  "variants": [
+    {
+      "name": "Classic Claymation",
+      "positive": "handcrafted claymation character, stop motion style, polymer clay texture, bright colors",
+      "negative": "realistic, digital art, smooth surface, 3D render",
+      "weight": 1.0
+    },
+    {
+      "name": "Detailed Clay",
+      "positive": "professional clay animation, detailed clay texture, handcrafted details, warm lighting",
+      "negative": "photorealistic, digital, perfect surface",
+      "weight": 1.2
+    },
+    {
+      "name": "Simple Clay",
+      "positive": "simple clay character, basic shapes, soft colors",
+      "negative": "complex, detailed, realistic, digital",
+      "weight": 0.8
+    }
+  ],
+
+  "tips": [
+    "Use 'handcrafted' or 'handmade' for authentic clay feel",
+    "Include 'stop motion' for animation style",
+    "Add 'polymer clay' for specific material",
+    "Use 'warm lighting' for cozy appearance",
+    "Avoid 'smooth' or 'perfect' for realistic clay texture"
+  ],
+
+  "examples": {
+    "prompts": {
+      "cat": "handcrafted claymation cat character, stop motion style, polymer clay texture, bright colors",
+      "dog": "clay dog figure, stop motion style, playful appearance, warm lighting",
+      "rabbit": "clay rabbit character, handcrafted design, soft colors, detailed texture"
+    },
+    "results": "Authentic claymation characters with handmade texture and charm"
+  }
+}

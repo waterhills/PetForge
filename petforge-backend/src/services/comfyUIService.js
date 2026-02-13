@@ -2,6 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
+import PromptService from './promptService.js';
+import GenerationQualityService from './generationQualityService.js';
+import NegativeDetectionService from './negativeDetectionService.js';
+import PromptABTestingService from './promptABTestingService.js';
 
 /**
  * Real ComfyUI Integration Service
@@ -11,6 +15,19 @@ class ComfyUIService {
   constructor() {
     this.comfyUIUrl = process.env.COMFYUI_URL || 'http://localhost:8188';
     this.clientId = process.env.COMFYUI_CLIENT_ID || 'petforge-client';
+
+    // 优化配置
+    this.optimizationEnabled = process.env.COMFYUI_OPTIMIZATION === 'true';
+    this.abTestingEnabled = process.env.COMFYUI_AB_TESTING === 'true';
+    this.qualityAssessmentEnabled = process.env.COMFYUI_QUALITY_ASSESSMENT === 'true';
+    this.negativeDetectionEnabled = process.env.COMFYUI_NEGATIVE_DETECTION === 'true';
+
+    console.log('[ComfyUI] Service initialized with optimizations:', {
+      optimization: this.optimizationEnabled,
+      abTesting: this.abTestingEnabled,
+      qualityAssessment: this.qualityAssessmentEnabled,
+      negativeDetection: this.negativeDetectionEnabled
+    });
   }
 
   /**
@@ -147,49 +164,107 @@ class ComfyUIService {
   }
 
   /**
-   * 构建提示词
+   * 构建提示词 - 使用新的 Prompt 服务
    */
-  buildPrompt(taskData) {
+  async buildPrompt(taskData) {
+    try {
+      const { style, petName, customPrompt, intensity = 1, detailLevel = 'medium' } = taskData;
+
+      console.log('[ComfyUI] Building optimized prompt for:', { style, petName, intensity, detailLevel });
+
+      // 使用 Prompt 服务生成优化提示词
+      const promptData = await PromptService.generatePrompt({
+        style,
+        petName,
+        customPrompt,
+        intensity,
+        detailLevel,
+        type: taskData.type || '2d'
+      });
+
+      // 如果启用了 A/B 测试，可能使用变体
+      let finalPrompt = promptData.positive;
+      let finalNegative = promptData.negative;
+
+      if (this.abTestingEnabled && promptData.variants.length > 1) {
+        // 选择第一个变体进行 A/B 测试
+        const variant = promptData.variants[0];
+        finalPrompt = variant.prompt;
+        finalNegative = variant.negative;
+        console.log('[ComfyUI] Using A/B test variant:', variant.id);
+      }
+
+      // 如果启用了优化，进一步优化提示词
+      if (this.optimizationEnabled) {
+        const optimized = await PromptService.optimizePrompt({
+          positive: finalPrompt,
+          negative: finalNegative,
+          metadata: {
+            style,
+            intensity,
+            detailLevel,
+            type: taskData.type || '2d'
+          }
+        });
+        finalPrompt = optimized.optimized.positive;
+        finalNegative = optimized.optimized.negative;
+        console.log('[ComfyUI] Prompt optimized with score:', optimized.quality.score);
+      }
+
+      console.log('[ComfyUI] Final prompt generated:', {
+        positive: finalPrompt.substring(0, 100) + '...',
+        negative: finalNegative.substring(0, 100) + '...'
+      });
+
+      return { positive: finalPrompt, negative: finalNegative };
+
+    } catch (error) {
+      console.error('[ComfyUI] Error building prompt:', error);
+      // 回退到简单提示词
+      return this.getFallbackPrompt(taskData);
+    }
+  }
+
+  /**
+   * 获取备用提示词
+   */
+  getFallbackPrompt(taskData) {
     const { style, petName, customPrompt } = taskData;
-
-    let prompt = `cute pet`;
-
-    // 风格修饰符
-    const styleModifiers = {
-      'pixar': '3D render, Pixar animation style, vibrant colors, smooth textures, detailed, expressive eyes, soft lighting',
-      'clay': 'clay animation style, stop motion, polymer clay, soft texture, handcrafted, warm lighting, childish, adorable, pastel colors',
-      'cyber': 'cyberpunk, neon lights, mechanical elements, futuristic, glowing effects, high tech, digital art',
-      'line': 'clean minimalist line art, simple elegant outlines, monochrome, vector style, suitable for printing',
+    const fallback = {
+      positive: `cute ${style} pet character`,
+      negative: 'blurry, low quality, ugly, scary'
     };
 
-    if (styleModifiers[style]) {
-      prompt += `, ${styleModifiers[style]}`;
-    }
-
     if (petName) {
-      prompt += `, pet's name is "${petName}"`;
+      fallback.positive += `, name is ${petName}`;
     }
 
     if (customPrompt) {
-      prompt += `, ${customPrompt}`;
+      fallback.positive += `, ${customPrompt}`;
     }
 
-    return prompt;
+    return fallback;
   }
 
   /**
    * 自定义工作流参数
    */
-  customizeWorkflow(workflow, taskData, uploadedImageName = null) {
-    const prompt = this.buildPrompt(taskData);
+  async customizeWorkflow(workflow, taskData, uploadedImageName = null) {
+    const promptData = await this.buildPrompt(taskData);
 
     // 克隆工作流以避免修改原始对象
     const customizedWorkflow = JSON.parse(JSON.stringify(workflow));
 
     // 修改正向提示词（节点2）
     if (customizedWorkflow['2'] && customizedWorkflow['2'].inputs) {
-      customizedWorkflow['2'].inputs.text = prompt;
-      console.log(`[ComfyUI] Customized prompt for ${taskData.style}: ${prompt.substring(0, 50)}...`);
+      customizedWorkflow['2'].inputs.text = promptData.positive;
+      console.log(`[ComfyUI] Customized prompt for ${taskData.style}: ${promptData.positive.substring(0, 50)}...`);
+    }
+
+    // 修改反向提示词（节点3）
+    if (customizedWorkflow['3'] && customizedWorkflow['3'].inputs) {
+      customizedWorkflow['3'].inputs.text = promptData.negative;
+      console.log(`[ComfyUI] Customized negative prompt for ${taskData.style}: ${promptData.negative.substring(0, 50)}...`);
     }
 
     // 设置随机种子（节点4）
@@ -205,6 +280,88 @@ class ComfyUIService {
     }
 
     return customizedWorkflow;
+  }
+
+  /**
+   * 记录 A/B 测试样本
+   */
+  async recordABTestSample(comfyTaskId, taskData) {
+    try {
+      // 获取当前活跃的 A/B 测试
+      // 这里简化处理，实际应该从配置或数据库获取
+      console.log('[ComfyUI] Recording A/B test sample for:', comfyTaskId);
+
+      // 模拟记录样本
+      const sampleData = {
+        taskId: comfyTaskId,
+        taskData,
+        timestamp: new Date().toISOString()
+      };
+
+      console.log('[ComfyUI] A/B test sample recorded:', sampleData);
+
+      // 这里可以集成实际的 A/B 测试服务
+      // await PromptABTestingService.recordSample(testId, variantId, resultData);
+
+    } catch (error) {
+      console.error('[ComfyUI] Error recording A/B test sample:', error);
+    }
+  }
+
+  /**
+   * 处理生成结果
+   */
+  async processGenerationResult(taskId, resultData) {
+    try {
+      console.log('[ComfyUI] Processing generation result for:', taskId);
+
+      // 如果启用了负面样本检测
+      if (this.negativeDetectionEnabled) {
+        const detection = await NegativeDetectionService.detectNegativeSample({
+          id: taskId,
+          resultUrl: resultData.resultUrl,
+          promptData: resultData.promptData,
+          metadata: resultData.metadata
+        });
+
+        console.log('[ComfyUI] Negative detection result:', {
+          score: detection.overallScore,
+          recommendation: detection.recommendation,
+          issues: detection.issues
+        });
+
+        if (detection.overallScore < 0.3) {
+          console.log('[ComfyUI] Generation rejected due to negative sample detection');
+          throw new Error('Generation rejected: Low quality detected');
+        }
+      }
+
+      // 如果启用了质量评估
+      if (this.qualityAssessmentEnabled) {
+        const quality = await GenerationQualityService.assessGeneration({
+          resultUrl: resultData.resultUrl,
+          metadata: resultData.metadata,
+          promptData: resultData.promptData
+        });
+
+        console.log('[ComfyUI] Quality assessment result:', {
+          score: quality.score,
+          recommendation: quality.recommendation
+        });
+
+        // 根据质量评估结果处理
+        if (quality.score < 60) {
+          console.log('[ComfyUI] Quality below threshold, consider regenerating');
+          // 可以选择自动重新生成或标记为需要审查
+        }
+      }
+
+      return resultData;
+
+    } catch (error) {
+      console.error('[ComfyUI] Error processing generation result:', error);
+      throw error;
+    }
   }
 
   /**
@@ -231,7 +388,7 @@ class ComfyUIService {
       const workflow = await this.loadWorkflow(style, hasInputImage);
 
       // 自定义工作流参数（传入上传的图片文件名）
-      const customizedWorkflow = this.customizeWorkflow(workflow, taskData, uploadedImageName);
+      const customizedWorkflow = await this.customizeWorkflow(workflow, taskData, uploadedImageName);
 
       // 准备请求数据
       const requestBody = {
@@ -266,6 +423,11 @@ class ComfyUIService {
 
       const taskId = result.prompt_id;
       console.log(`[ComfyUI] Task queued: ${taskId}`);
+
+      // 如果启用了 A/B 测试，记录测试数据
+      if (this.abTestingEnabled) {
+        await this.recordABTestSample(taskId, taskData);
+      }
 
       return taskId;
 
@@ -355,6 +517,22 @@ class ComfyUIService {
       };
 
       console.log(`[ComfyUI] Status check: ${status} ${progress}%`);
+
+      // 如果完成，处理结果
+      if (status === 'completed' && this.qualityAssessmentEnabled) {
+        try {
+          await this.processGenerationResult(taskId, {
+            resultUrl,
+            metadata: { taskId, timestamp: new Date().toISOString() },
+            promptData: null // 这里应该从数据库获取
+          });
+        } catch (processingError) {
+          console.error('[ComfyUI] Error processing completed generation:', processingError);
+          // 标记为失败但保留结果URL
+          result.status = 'failed';
+          result.error = processingError.message;
+        }
+      }
 
       return result;
 

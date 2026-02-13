@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String             @id @default(cuid())
+  email            String             @unique
+  password         String?
+  name             String?
+  avatar           String?
+  phone            String?
+  bio              String?
+  credits          Int                @default(100)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  orders           Order[]
+  petIPs           PetIP[]
+  cartItems        CartItem[]
+  addresses        Address[]
+  pointTransactions PointTransaction[]
+  generations       Generation[] // New: Track AI generations for user
+}
+
+
+model PetIP {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  style         String
+  rarity        String    @default("Common")
+  originalImage String?   // Make optional - user may not upload original photo
+  generatedImage String
+  model3D       String?   // For 3D model file (GLB/GLTF)
+  likes         Int       @default(0)
+  isPublic      Boolean   @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  cartItems     CartItem[]
+  generations   Generation[] // One PetIP can have many Generations
+}
+
+model CartItem {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  petIpId       String?
+  petIp         PetIP?    @relation(fields: [petIpId], references: [id])
+  productType   String
+  productName   String
+  price         Float
+  size          String?
+  baseStyle     String?
+  quantity      Int       @default(1)
+  createdAt     DateTime   @default(now())
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  orderNumber     String      @unique
+  totalAmount     Float
+  receiverName    String
+  receiverPhone   String
+  receiverAddress String
+  paymentMethod   String
+  status          String      @default("pending")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  items           OrderItem[]
+}
+  payments        Payment[]
+  statusHistory   OrderStatusHistory[]
+}

@@ -90,6 +90,49 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
+// Add item to cart (alternative endpoint, requires authentication)
+router.post('/add', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // Validate request body
+    const validatedData = addToCartSchema.parse(req.body);
+    const { petIpId, productType, productName, price, size, baseStyle, quantity } = validatedData;
+
+    const cartItem = await prisma.cartItem.create({
+      data: {
+        userId,
+        petIpId,
+        productType,
+        productName,
+        price: parseFloat(price),
+        size,
+        baseStyle,
+        quantity: parseInt(quantity),
+      },
+      include: { petIp: true },
+    });
+
+    res.status(201).json({
+      success: true,
+      data: cartItem,
+    });
+  } catch (error) {
+    if (error.name === 'ZodError') {
+      return res.status(400).json({
+        success: false,
+        error: error.errors,
+      });
+    }
+
+    console.error('Add to cart (alternative) error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to add to cart',
+    });
+  }
+});
+
 // Remove item from cart (requires authentication)
 router.delete('/', authenticateToken, async (req, res) => {
   try {

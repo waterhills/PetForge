@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -26,7 +26,7 @@ model User {
   cartItems        CartItem[]
   addresses        Address[]
   pointTransactions PointTransaction[]
-  generations       Generation[]
+  generations       Generation[] // New: Track AI generations for user
 }
 
 
@@ -37,15 +37,15 @@ model PetIP {
   name          String
   style         String
   rarity        String    @default("Common")
-  originalImage String?
+  originalImage String?   // Make optional - user may not upload original photo
   generatedImage String
-  model3D       String?
+  model3D       String?   // For 3D model file (GLB/GLTF)
   likes         Int       @default(0)
   isPublic      Boolean   @default(false)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   cartItems     CartItem[]
-  generations   Generation[]
+  generations   Generation[] // One PetIP can have many Generations
 }
 
 model CartItem {
@@ -64,21 +64,19 @@ model CartItem {
 }
 
 model Order {
-  id              String                @id @default(cuid())
+  id              String      @id @default(cuid())
   userId          String
-  user            User                  @relation(fields: [userId], references: [id])
-  orderNumber     String                @unique
+  user            User        @relation(fields: [userId], references: [id])
+  orderNumber     String      @unique
   totalAmount     Float
   receiverName    String
   receiverPhone   String
   receiverAddress String
   paymentMethod   String
-  status          String                @default("pending")
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
+  status          String      @default("pending")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
   items           OrderItem[]
-  payments        Payment[]
-  statusHistory   OrderStatusHistory[]
 }
 
 model OrderItem {
@@ -98,16 +96,16 @@ model Generation {
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   petIpId       String?
   petIp         PetIP?    @relation(fields: [petIpId], references: [id])
-  type          String
-  status        String   @default("pending")
-  prompt        String
-  inputImage    String?
-  resultUrl     String?
-  resultData    String?
+  type          String   // "2d" for image, "3d" for model
+  status        String   @default("pending") // pending, processing, completed, failed
+  prompt        String   // JSON string of generation parameters
+  inputImage    String? // URL or base64 of input image
+  resultUrl     String? // URL of generated result
+  resultData    String? // JSON string of additional result data
   errorMessage  String?
-  cost          Int      @default(0)
+  cost          Int      @default(0) // Credits cost
   createdAt     DateTime   @default(now())
-  completedAt   DateTime?
+  completedAt   DateTime? // When generation completed
 }
 
 model CommunityPost {
@@ -118,7 +116,7 @@ model CommunityPost {
   images     String
   likes      Int       @default(0)
   isPublic   Boolean   @default(true)
-  createdAt  DateTime  @default(now())
+  createdAt  DateTime   @default(now())
 }
 
 model Address {
@@ -132,46 +130,30 @@ model Address {
   district     String
   detail       String
   isDefault    Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model PointTransaction {
   id          String   @id @default(cuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id])
-  type        String
-  amount      Int
-  balance     Int
+  type        String   // 'earn', 'spend', 'refund', 'admin_add', 'admin_deduct'
+  amount      Int      // positive for earn/refund, negative for spend
+  balance     Int      // balance after this transaction
   description String
-  orderId     String?
-  createdAt   DateTime @default(now())
+  orderId     String? // related order if applicable
+  createdAt   DateTime   @default(now())
 }
 
 model Payment {
-  id                  String   @id @default(cuid())
-  orderId             String
-  order               Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  transactionId       String   @unique
-  providerTransactionId String?
-  amount              Float
-  paymentMethod       String
-  status              String   @default("pending")
-  paidAt              DateTime?
-  failureReason       String?
-  metadata            String?
-  notifyReceived      Boolean  @default(false)
-  retryCount          Int      @default(0)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-}
-
-model OrderStatusHistory {
-  id          String   @id @default(cuid())
-  orderId     String
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  fromStatus  String?
-  toStatus    String
-  reason      String?
-  createdAt   DateTime @default(now())
+  id              String   @id @default(cuid())
+  orderId         String
+  transactionId   String   @unique // unique transaction number
+  amount          Float
+  paymentMethod   String
+  status          String      @default("pending") // pending, success, failed, refunded
+  paidAt          DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 }

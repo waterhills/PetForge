@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import http from 'http';
+import GenerationSocketServer from './websocket/generationSocket.js';
 
 dotenv.config();
 
@@ -11,6 +13,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+
+// 创建 HTTP 服务器用于 WebSocket
+const server = http.createServer(app);
 
 // Middleware
 app.use(cors({
@@ -39,46 +44,90 @@ app.use('/api/cart', (await import('./routes/cart.js')).default);
 app.use('/api/orders', (await import('./routes/orders.js')).default);
 app.use('/api/payments', (await import('./routes/payments.js')).default);
 app.use('/api/addresses', (await import('./routes/addresses.js')).default);
+app.use('/api/payments/wechat', (await import('./routes/payments-wechat.js')).default);
+app.use('/api/payments/alipay', (await import('./routes/payments-alipay.js')).default);
 app.use('/api/points', (await import('./routes/points.js')).default);
 app.use('/api/admin', (await import('./routes/admin.js')).default);
+
+// Prompt Optimization Routes
+app.use('/api/prompt-optimization', (await import('./routes/prompt-optimization.js')).default);
 
 // Import generation routes
 import generationRouter from './routes/generation.js';
 import simpleGenerationRouter from './routes/generation-simple.js';
 import comfyUIRouter from './routes/generation-comfyui.js';
+import queueGenerationRouter from './routes/generation-queue.js';
+import { queueInitializer } from './queue/initQueue.js';
 
 // Enable ComfyUI routes (real AI generation)
 app.use('/api/generation', comfyUIRouter);
+// Enable Bull queue routes
+app.use('/api/generation', queueGenerationRouter);
 // Simple test routes available as fallback
 // app.use('/api/generation', simpleGenerationRouter);
 
 // Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(err.status || 500).json({
-    success: false,
-    error: err.message || 'Internal server error',
-  });
-});
+import { errorHandler, notFoundHandler } from './utils/logger.js';
+
+// Custom error handler
+app.use(errorHandler);
 
 // 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    error: 'Route not found',
-  });
-});
+app.use(notFoundHandler);
 
-// Start server
-app.listen(PORT, () => {
+
+// 启动 WebSocket 服务器
+const wsServer = new GenerationSocketServer(server);
+
+// 初始化队列系统
+async function initializeQueueSystem() {
+  try {
+    await queueInitializer.init();
+    console.log('✅ Queue system initialized');
+  } catch (error) {
+    console.error('❌ Failed to initialize queue system:', error);
+    process.exit(1);
+  }
+}
+
+// 启动服务器
+server.listen(PORT, () => {
   console.log(`
 ╔════════════════════════════════╗
 ║     🐾 PetForge Backend API Server         ║
 ╠═══════════════════════════════╣
 ║  Environment: ${process.env.NODE_ENV || 'development'}                      ║
-║  Port: ${PORT}                                  ║
-║  URL: http://localhost:${PORT}              ║
+║  HTTP Port: ${PORT}                            ║
+║  WebSocket: ws://localhost:${PORT}/ws/generation  ║
+║  Queue: Bull + Redis Ready     ║
 ╚══════════════════════════════════╝
 
 `);
+
+  // 输出队列系统状态
+  setInterval(() => {
+    const status = queueInitializer.getStatus();
+    if (status.isInitialized) {
+      console.log(`[Queue] Status: ${status.health.status}, Active: ${status.stats.active}, Waiting: ${status.stats.waiting}`);
+    }
+  }, 60000);
+});
+
+// 优雅关闭
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully...');
+  await queueInitializer.shutdown();
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received, shutting down gracefully...');
+  await queueInitializer.shutdown();
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
 });

@@ -1,0 +1,219 @@
+{
+  "style": "line",
+  "name": "Minimalist Line Art Style",
+  "description": "Clean minimalist line art with simple shapes and elegant design",
+  "version": "1.0",
+  "author": "PetForge AI",
+  "lastUpdated": "2026-02-13",
+
+  "positivePrompts": {
+    "base": [
+      "minimalist line art pet character",
+      "clean lines",
+      "simple shapes",
+      "elegant design",
+      "professional",
+      "artistic",
+      "vector style",
+      "monochrome",
+      "outline drawing",
+      "contour lines"
+    ],
+
+    "enhanced": [
+      "detailed minimalist line art",
+      "precise contours",
+      "elegant line work",
+      "professional vector art",
+      "clean composition",
+      "balanced design",
+      "artistic simplicity",
+      "minimal detail",
+      "refined lines",
+      "sophisticated design"
+    ],
+
+    "minimal": [
+      "simple line art",
+      "basic outline",
+      "clean design",
+      "monochrome drawing"
+    ],
+
+    "styles": {
+      "geometric": "geometric shapes, angular design, structured",
+      "organic": "organic curves, natural flow, smooth lines",
+      "abstract": "abstract forms, simplified design, artistic",
+      "minimal": "minimal elements, essential lines, pure design"
+    },
+
+    "lineTypes": {
+      "single_stroke": "single stroke drawing, continuous line",
+      "contour": "contour lines, clean outlines",
+      "technical": "technical drawing, precise lines",
+      "sketch": "simple sketch, loose lines",
+      "vector": "vector style, clean paths"
+    },
+
+    "composition": {
+      "centered": "centered composition, balanced design",
+      "asymmetrical": "asymmetrical layout, dynamic balance",
+      "minimal": "minimal composition, negative space",
+      "balanced": "balanced elements, harmonious design"
+    },
+
+    "detail": {
+      "simple": "simple outline, minimal detail",
+      "minimalist": "minimalist design, clean lines",
+      "pure": "pure line art, no shading",
+      "essential": "essential elements, core design"
+    }
+  },
+
+  "negativePrompts": {
+    "base": [
+      "complex",
+      "detailed",
+      "messy",
+      "3D rendering",
+      "realistic",
+      "colorful",
+      "shading",
+      "texture",
+      "gradient",
+      "photorealistic"
+    ],
+
+    "style": [
+      "3D art",
+      "realistic",
+      "photorealistic",
+      "digital painting",
+      "watercolor",
+      "oil painting",
+      "illustration",
+      "cartoon",
+      "anime",
+      "manga"
+    ],
+
+    "elements": [
+      "shading",
+      "gradients",
+      "textures",
+      "color",
+      "3D",
+      "realistic",
+      "detailed",
+      "complex",
+      "messy"
+    ],
+
+    "techniques": [
+      "blending",
+      "smudging",
+      "brush strokes",
+      "painting",
+      "rendering",
+      "shading",
+      "lighting",
+      "shadow"
+    ]
+  },
+
+  "parameters": {
+    "styleWeights": {
+      "minimalist": 1.0,
+      "line_art": 0.9,
+      "vector": 0.8,
+      "outline": 0.7
+    },
+
+    "recommendedSettings": {
+      "steps": 20,
+      "cfg": 6,
+      "sampler": "euler",
+      "scheduler": "normal",
+      "resolution": "512x512"
+    },
+
+    "intensityLevels": {
+      "low": {
+        "cfg": 5,
+        "steps": 15,
+        "lineThickness": "thin"
+      },
+      "medium": {
+        "cfg": 6,
+        "steps": 20,
+        "lineThickness": "medium"
+      },
+      "high": {
+        "cfg": 7,
+        "steps": 25,
+        "lineThickness": "thick"
+      }
+    }
+  },
+
+  "modifiers": {
+    "design": {
+      "geometric": "geometric shapes, angular design",
+      "organic": "organic curves, natural flow",
+      "abstract": "abstract forms, artistic expression",
+      "minimal": "minimal elements, clean design"
+    },
+
+    "lines": {
+      "clean": "clean lines, precise outlines",
+      "single": "single stroke, continuous line",
+      "contour": "contour lines, detailed outline",
+      "technical": "technical drawing, structured lines"
+    },
+
+    "composition": {
+      "centered": "centered focus, balanced layout",
+      "asymmetrical": "dynamic balance, artistic layout",
+      "minimal": "negative space, simple composition",
+      "elegant": "elegant arrangement, sophisticated design"
+    }
+  },
+
+  "variants": [
+    {
+      "name": "Classic Line Art",
+      "positive": "minimalist line art pet character, clean lines, simple shapes, elegant design",
+      "negative": "complex, detailed, 3D rendering, colorful, shading",
+      "weight": 1.0
+    },
+    {
+      "name": "Geometric Line",
+      "positive": "geometric line art pet, angular shapes, structured design, clean contours",
+      "negative": "organic, curved, realistic, detailed",
+      "weight": 1.1
+    },
+    {
+      "name": "Simple Outline",
+      "positive": "simple line outline pet character, basic design, monochrome",
+      "negative": "complex, detailed, 3D, shading, gradient",
+      "weight": 0.9
+    }
+  ],
+
+  "tips": [
+    "Use 'clean lines' or 'simple outline' for minimalist design",
+    "Include 'vector style' or 'contour lines' for professional look",
+    "Add 'monochrome' or 'black and white' for pure line art",
+    "Use 'minimalist' or 'simple' to avoid complexity",
+    "Avoid '3D', 'shading', or 'colorful' for pure line style"
+  ],
+
+  "examples": {
+    "prompts": {
+      "cat": "minimalist line art cat, clean contours, simple shapes, vector style",
+      "dog": "simple line drawing dog, elegant outline, monochrome design",
+      "bird": "minimalist bird illustration, clean lines, artistic simplicity"
+    },
+    "results": "Elegant minimalist line art with clean, professional design"
+  }
+}

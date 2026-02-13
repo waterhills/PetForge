@@ -3,6 +3,19 @@ import { z } from 'zod';
 import prisma from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import comfyUIService from '../services/comfyUIService.js';
+import { addGenerationJob, GENERATION_PRIORITY } from '../queue/generationQueue.js';
+import { queueMonitor } from '../queue/queueMonitor.js';
+import GenerationSocketServer from '../websocket/generationSocket.js';
+
+// 获取 WebSocket 服务器实例
+let wsServer;
+const getWsServer = () => {
+  if (!wsServer) {
+    const server = express();
+    wsServer = new GenerationSocketServer(server);
+  }
+  return wsServer;
+};
 
 const router = express.Router();
 
@@ -104,6 +117,15 @@ router.post('/queue-comfyui', authenticateToken, async (req, res) => {
         },
       });
 
+      // 推送任务开始事件
+      const wsServerInstance = getWsServer();
+      if (wsServerInstance) {
+        wsServerInstance.broadcastStatusChange(taskId, 'processing', {
+          message: 'Generation started',
+          estimatedTime: '15-30 seconds',
+        });
+      }
+
       // Return task ID for client polling (return database ID, not ComfyUI ID)
       res.json({
         success: true,
@@ -127,6 +149,14 @@ router.post('/queue-comfyui', authenticateToken, async (req, res) => {
           errorMessage: comfyError.message,
         },
       });
+
+      // 推送失败事件
+      const wsServerInstance = getWsServer();
+      if (wsServerInstance) {
+        wsServerInstance.broadcastStatusChange(taskId, 'failed', {
+          error: comfyError.message,
+        });
+      }
 
       res.status(500).json({
         success: false,
@@ -218,6 +248,16 @@ router.get('/status-comfyui/:taskId', authenticateToken, async (req, res) => {
         },
       });
 
+      // 推送完成事件
+      const wsServerInstance = getWsServer();
+      if (wsServerInstance) {
+        wsServerInstance.broadcastStatusChange(taskId, 'completed', {
+          resultUrl: statusData.resultUrl,
+          cost,
+          message: 'Generation completed successfully',
+        });
+      }
+
       console.log('[ComfyUI] Generation completed, credits deducted:', cost);
     } else if (statusData.status === 'failed') {
       // Mark as failed in database
@@ -229,6 +269,14 @@ router.get('/status-comfyui/:taskId', authenticateToken, async (req, res) => {
           completedAt: new Date(),
         },
       });
+
+      // 推送失败事件
+      const wsServerInstance = getWsServer();
+      if (wsServerInstance) {
+        wsServerInstance.broadcastStatusChange(taskId, 'failed', {
+          error: statusData.error || 'Generation failed',
+        });
+      }
     }
 
     res.json({
@@ -322,6 +370,69 @@ router.get('/history', authenticateToken, async (req, res) => {
   }
 });
 
+// 模拟进度更新（用于测试）
+router.post('/simulate-progress/:taskId', authenticateToken, async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const userId = req.userId;
+
+    // 验证任务所有权
+    const generation = await prisma.generation.findUnique({
+      where: { id: taskId },
+    });
+
+    if (!generation || generation.userId !== userId) {
+      return res.status(404).json({
+        success: false,
+        error: 'Task not found or access denied',
+      });
+    }
+
+    // 开始进度模拟
+    const wsServerInstance = getWsServer();
+    if (!wsServerInstance) {
+      return res.status(500).json({
+        success: false,
+        error: 'WebSocket server not available',
+      });
+    }
+
+    // 模拟进度更新
+    let progress = 0;
+    const interval = setInterval(async () => {
+      progress += Math.random() * 10 + 5;
+      if (progress > 95) progress = 95;
+
+      await wsServerInstance.broadcastProgressUpdate(taskId, {
+        progress: Math.min(100, progress),
+        status: 'processing',
+        message: `Generating... ${Math.round(progress)}%`,
+      });
+
+      if (progress >= 95) {
+        clearInterval(interval);
+        // 模拟完成
+        await wsServerInstance.broadcastStatusChange(taskId, 'completed', {
+          resultUrl: 'https://example.com/result.jpg',
+          message: 'Generation completed',
+        });
+      }
+    }, 1000);
+
+    res.json({
+      success: true,
+      message: 'Progress simulation started',
+    });
+
+  } catch (error) {
+    console.error('[ComfyUI] Progress simulation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to start progress simulation',
+    });
+  }
+});
+
 // Cancel generation
 router.delete('/:taskId', authenticateToken, async (req, res) => {
   try {
@@ -349,6 +460,14 @@ router.delete('/:taskId', authenticateToken, async (req, res) => {
         completedAt: new Date(),
       },
     });
+
+    // 推送取消事件
+    const wsServerInstance = getWsServer();
+    if (wsServerInstance) {
+      wsServerInstance.broadcastStatusChange(taskId, 'failed', {
+        error: 'Cancelled by user',
+      });
+    }
 
     res.json({
       success: true,

@@ -43,6 +43,83 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+// Admin dashboard
+router.get('/dashboard', async (req, res) => {
+  try {
+    // 获取概览统计数据
+    const [totalUsers, totalPetIPs, totalOrders] = await Promise.all([
+      prisma.user.count(),
+      prisma.petIP.count(),
+      prisma.order.count()
+    ]);
+
+    // 获取最近活动
+    // 获取最近活动
+    const recentActivity = await prisma.$transaction(async (tx) => {
+      const users = await tx.user.findMany({
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          avatar: true,
+          credits: true,
+          createdAt: true
+        }
+      });
+
+      const petIPs = await tx.petIP.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: {
+            select: {
+              name: true
+            }
+          }
+        }
+      });
+
+      const orders = await tx.order.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: {
+            select: {
+              name: true
+            }
+          }
+        }
+      });
+
+      return {
+        users,
+        petIPs,
+        orders
+      };
+    });
+
+    res.json({
+      success: true,
+      data: {
+        overview: {
+          totalUsers,
+          totalPetIPs,
+          totalOrders
+        },
+        recentActivity
+      }
+    });
+  } catch (error) {
+    console.error('Dashboard error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch dashboard data',
+    });
+  }
+});
+
 // Get all users
 router.get('/users', async (req, res) => {
   try {

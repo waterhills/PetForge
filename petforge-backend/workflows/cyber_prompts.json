@@ -1,0 +1,220 @@
+{
+  "style": "cyber",
+  "name": "Cyberpunk Style",
+  "description": "Futuristic cyberpunk characters with neon lights and tech elements",
+  "version": "1.0",
+  "author": "PetForge AI",
+  "lastUpdated": "2026-02-13",
+
+  "positivePrompts": {
+    "base": [
+      "cool cyberpunk pet character",
+      "neon lights",
+      "futuristic elements",
+      "high tech aesthetic",
+      "clean lines",
+      "glowing effects",
+      "vibrant colors",
+      "tech details",
+      "digital art",
+      "cybernetic enhancement"
+    ],
+
+    "enhanced": [
+      "ultra detailed cyberpunk character",
+      "advanced cybernetics",
+      "neon glow effects",
+      "holographic elements",
+      "tech circuits",
+      "futuristic design",
+      "high tech fashion",
+      "glowing circuits",
+      "digital interface",
+      "cybernetic implants"
+    ],
+
+    "minimal": [
+      "cyberpunk pet",
+      "simple tech elements",
+      "neon colors",
+      "clean design"
+    ],
+
+    "tech": {
+      "cybernetic": "cybernetic enhancements, robotic parts",
+      "robotic": "robotic elements, mechanical design",
+      "augmented": "augmented reality interface, tech overlay",
+      "digital": "digital effects, pixel elements",
+      "holographic": "holographic projection, light effects"
+    },
+
+    "lighting": {
+      "neon": "neon glow, vibrant lighting, colorful lights",
+      "led": "LED lighting, bright tech lights",
+      "glowing": "glowing effects, light emission",
+      "backlit": "backlight effects, rim lighting",
+      "holographic": "holographic glow, digital lights"
+    },
+
+    "elements": {
+      "circuits": "circuit patterns, tech design, electronic",
+      "mechanical": "mechanical parts, tech components",
+      "digital": "digital elements, pixel effects",
+      "futuristic": "futuristic design, advanced tech",
+      "techwear": "tech fashion, futuristic clothing"
+    },
+
+    "mood": {
+      "edgy": "edgy design, sharp lines, bold colors",
+      "futuristic": "futuristic aesthetic, advanced tech",
+      "digital": "digital vibe, pixel elements",
+      "high_tech": "high tech feel, advanced design",
+      "cyber": "cyberpunk vibe, neon lights"
+    }
+  },
+
+  "negativePrompts": {
+    "base": [
+      "traditional",
+      "cute",
+      "soft lighting",
+      "pastel colors",
+      "rustic",
+      "vintage",
+      "natural",
+      "organic",
+      "handmade",
+      "handcrafted"
+    ],
+
+    "style": [
+      "realistic",
+      "photorealistic",
+      "traditional art",
+      "cartoon",
+      "anime",
+      "watercolor",
+      "oil painting",
+      "sketch",
+      "drawing",
+      "illustration"
+    ],
+
+    "lighting": [
+      "soft lighting",
+      "warm lighting",
+      "natural light",
+      "daylight",
+      "gentle shadows",
+      "soft glow"
+    ],
+
+    "colors": [
+      "pastel",
+      "muted",
+      "warm",
+      "natural",
+      "earth tones",
+      "soft colors"
+    ]
+  },
+
+  "parameters": {
+    "styleWeights": {
+      "cyberpunk": 1.0,
+      "neon": 0.9,
+      "tech": 0.8,
+      "futuristic": 0.7
+    },
+
+    "recommendedSettings": {
+      "steps": 30,
+      "cfg": 9,
+      "sampler": "euler_a",
+      "scheduler": "sgm_uniform",
+      "resolution": "512x512"
+    },
+
+    "intensityLevels": {
+      "low": {
+        "cfg": 7,
+        "steps": 25,
+        "neonIntensity": 0.8
+      },
+      "medium": {
+        "cfg": 9,
+        "steps": 30,
+        "neonIntensity": 1.0
+      },
+      "high": {
+        "cfg": 11,
+        "steps": 35,
+        "neonIntensity": 1.2
+      }
+    }
+  },
+
+  "modifiers": {
+    "colors": {
+      "neon": "neon colors, vibrant hues, glowing lights",
+      "cyber": "cyberpunk palette, electric blues, hot pinks",
+      "tech": "tech colors, digital blues, cyber greens",
+      "glowing": "glowing effects, light emission",
+      "contrast": "high contrast, bold colors"
+    },
+
+    "lighting": {
+      "neon_glow": "neon glow effects, vibrant lighting",
+      "led": "LED lighting, bright tech lights",
+      "holographic": "holographic projection, digital lights",
+      "digital": "digital lighting, pixel effects",
+      "cyber": "cyberpunk lighting, neon atmosphere"
+    },
+
+    "tech": {
+      "circuits": "circuit patterns, electronic design",
+      "mechanical": "mechanical parts, tech components",
+      "digital": "digital interface, pixel elements",
+      "augmented": "augmented reality, tech overlay",
+      "cybernetic": "cybernetic enhancements, robotic parts"
+    }
+  },
+
+  "variants": [
+    {
+      "name": "Classic Cyberpunk",
+      "positive": "cool cyberpunk pet character, neon lights, futuristic elements, high tech aesthetic",
+      "negative": "traditional, cute, soft lighting, pastel colors",
+      "weight": 1.0
+    },
+    {
+      "name": "Tech Enhanced",
+      "positive": "cybernetic pet character, advanced tech elements, neon glow, digital interface",
+      "negative": "natural, organic, traditional, handmade",
+      "weight": 1.2
+    },
+    {
+      "name": "Minimal Cyber",
+      "positive": "simple cyberpunk character, basic tech elements, neon colors",
+      "negative": "complex, detailed, realistic, natural",
+      "weight": 0.8
+    }
+  ],
+
+  "tips": [
+    "Use 'neon lights' or 'neon glow' for authentic cyberpunk feel",
+    "Include 'tech' or 'cybernetic' for futuristic elements",
+    "Add 'glowing effects' for enhanced visual impact",
+    "Use 'digital art' or 'high tech' for tech aesthetic",
+    "Avoid 'soft', 'natural', or 'traditional' for pure cyberpunk style"
+  ],
+
+  "examples": {
+    "prompts": {
+      "cat": "cyberpunk cat character, neon lights, tech circuits, glowing effects, high tech aesthetic",
+      "dog": "futuristic dog companion, cybernetic enhancements, LED lighting, digital interface",
+      "robot": "robotic pet, advanced AI, neon accents, tech design"
+    },
+    "results": "Futuristic cyberpunk characters with neon lights and tech elements"
+  }
+}

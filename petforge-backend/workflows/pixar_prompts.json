@@ -1,0 +1,223 @@
+{
+  "style": "pixar",
+  "name": "Pixar 3D Style",
+  "description": "Pixar-style 3D animation characters with vibrant colors and smooth textures",
+  "version": "1.0",
+  "author": "PetForge AI",
+  "lastUpdated": "2026-02-13",
+
+  "positivePrompts": {
+    "base": [
+      "adorable 3D Pixar-style character",
+      "cute and expressive eyes",
+      "vibrant colors",
+      "high quality render",
+      "soft cinematic lighting",
+      "detailed textures",
+      "smooth surfaces",
+      "professional animation",
+      "Disney-Pixar aesthetic",
+      "character design"
+    ],
+
+    "enhanced": [
+      "ultra detailed 3D character",
+      "Pixar animation style",
+      "cinematic lighting",
+      "soft shadows",
+      "high quality textures",
+      "expressive facial features",
+      "detailed fur rendering",
+      "vibrant color palette",
+      "smooth subsurface scattering",
+      "professional character design"
+    ],
+
+    "minimal": [
+      "3D Pixar character",
+      "cute design",
+      "simple shapes",
+      "bright colors",
+      "clean render"
+    ],
+
+    "emotional": {
+      "happy": "smiling, cheerful, bright eyes, playful pose",
+      "sleepy": "sleepy expression, relaxed posture, gentle lighting",
+      "curious": "inquisitive look, tilted head, attentive",
+      "excited": "energetic pose, wide eyes, dynamic composition",
+      "calm": "serene expression, peaceful pose, soft lighting"
+    },
+
+    "poses": {
+      "sitting": "sitting comfortably, relaxed pose",
+      "standing": "standing proudly, confident posture",
+      "lying": "lying down, cozy position",
+      "playing": "playing with toy, active pose",
+      "running": "running action, dynamic movement"
+    },
+
+    "environments": {
+      "studio": "studio background, clean backdrop, professional",
+      "indoor": "cozy indoor setting, warm lighting",
+      "outdoor": "natural outdoor scene, daylight",
+      "abstract": "abstract background, colorful gradient",
+      "fantasy": "dreamy fantasy environment, magical"
+    },
+
+    "details": {
+      "high": "intricate details, fine textures, realistic materials",
+      "medium": "balanced details, good texture quality",
+      "low": "simple details, clean surfaces, minimal texture"
+    }
+  },
+
+  "negativePrompts": {
+    "base": [
+      "blurry",
+      "low quality",
+      "ugly",
+      "scary",
+      "realistic",
+      "photorealistic",
+      "2D art",
+      "cartoon",
+      "flat design",
+      "pixelated",
+      "deformed",
+      "distorted",
+      "extra limbs",
+      "missing parts",
+      "watermark",
+      "text",
+      "signature"
+    ],
+
+    "quality": [
+      "jpeg artifacts",
+      "compression artifacts",
+      "noise",
+      "grainy",
+      "oversaturated",
+      "undersaturated",
+      "poor lighting",
+      "harsh shadows"
+    ],
+
+    "composition": [
+      "cropped",
+      "cut off",
+      "bad composition",
+      "unbalanced",
+      "cluttered",
+      "busy background"
+    ],
+    "style": [
+      "realistic",
+      "photorealistic",
+      "anime",
+      "manga",
+      "vector art",
+      "pixel art",
+      "sketch",
+      "drawing"
+    ]
+  },
+
+  "parameters": {
+    "styleWeights": {
+      "pixar": 1.0,
+      "3d": 0.8,
+      "animation": 0.7,
+      "cinematic": 0.6
+    },
+
+    "recommendedSettings": {
+      "steps": 20,
+      "cfg": 7,
+      "sampler": "euler",
+      "scheduler": "normal",
+      "resolution": "512x512"
+    },
+
+    "intensityLevels": {
+      "low": {
+        "cfg": 5,
+        "steps": 15,
+        "styleMultiplier": 0.8
+      },
+      "medium": {
+        "cfg": 7,
+        "steps": 20,
+        "styleMultiplier": 1.0
+      },
+      "high": {
+        "cfg": 9,
+        "steps": 25,
+        "styleMultiplier": 1.2
+      }
+    }
+  },
+
+  "modifiers": {
+    "colors": {
+      "vibrant": "vibrant colors, saturated hues",
+      "warm": "warm color palette, golden tones",
+      "cool": "cool color palette, blue tones",
+      "pastel": "soft pastel colors, gentle hues",
+      "monochrome": "monochrome color scheme"
+    },
+
+    "lighting": {
+      "soft": "soft lighting, gentle shadows",
+      "dramatic": "dramatic lighting, strong contrast",
+      "golden": "golden hour lighting, warm tones",
+      "blue": "blue hour lighting, cool tones"
+    },
+
+    "textures": {
+      "smooth": "smooth surfaces, polished finish",
+      "soft": "soft textures, plush feel",
+      "detailed": "detailed textures, realistic materials",
+      "matte": "matte finish, no reflection"
+    }
+  },
+
+  "variants": [
+    {
+      "name": "Classic Pixar",
+      "positive": "adorable 3D Pixar-style character, vibrant colors, soft lighting, high quality render",
+      "negative": "blurry, low quality, realistic, 2D art, deformed",
+      "weight": 1.0
+    },
+    {
+      "name": "Pixar Detailed",
+      "positive": "ultra detailed 3D Pixar character, cinematic lighting, intricate details, professional animation",
+      "negative": "blurry, low quality, simple, photorealistic",
+      "weight": 1.2
+    },
+    {
+      "name": "Pixar Minimal",
+      "positive": "simple 3D Pixar character, clean design, bright colors",
+      "negative": "complex, detailed, realistic, messy",
+      "weight": 0.8
+    }
+  ],
+
+  "tips": [
+    "Use 'cinematic lighting' for dramatic effect",
+    "Include 'vibrant colors' for eye-catching results",
+    "Add 'expressive eyes' to enhance personality",
+    "Use 'soft lighting' for gentle appearance",
+    "Avoid 'realistic' for pure Pixar style"
+  ],
+
+  "examples": {
+    "prompts": {
+      "cat": "adorable 3D Pixar-style cat character, cute and expressive, vibrant colors, soft lighting",
+      "dog": "adorable 3D Pixar-style dog character, loyal and friendly, bright colors, detailed fur",
+      "rabbit": "adorable 3D Pixar-style rabbit character, playful and energetic, soft colors, big eyes"
+    },
+    "results": "High-quality 3D character renders with Pixar-style aesthetics"
+  }
+}
