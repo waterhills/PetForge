@@ -27,6 +27,11 @@ model User {
   addresses        Address[]
   pointTransactions PointTransaction[]
   generations       Generation[]
+  communityPosts  CommunityPost[]
+  comments         Comment[]
+  postLikes        PostLike[]
+  postFavorites    PostFavorite[]
+  notifications    Notification[]
 }
 
 
@@ -46,6 +51,7 @@ model PetIP {
   updatedAt     DateTime   @updatedAt
   cartItems     CartItem[]
   generations   Generation[]
+  communityPosts CommunityPost[]
 }
 
 model CartItem {
@@ -111,14 +117,28 @@ model Generation {
 }
 
 model CommunityPost {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   petIpId    String?
-  content    String
-  images     String
+  petIp      PetIP?    @relation(fields: [petIpId], references: [id], onDelete: Cascade)
+  content    String    @db.Text
+  images     Json?
   likes      Int       @default(0)
   isPublic   Boolean   @default(true)
   createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  comments   Comment[]
+  likesList  PostLike[]
+  favorites  PostFavorite[]
+  notifications Notification[]
+
+  @@index([userId])
+  @@index([petIpId])
+  @@index([isPublic, createdAt(sort: Desc)])
+  @@index([deletedAt])
 }
 
 model Address {
@@ -174,4 +194,70 @@ model OrderStatusHistory {
   toStatus    String
   reason      String?
   createdAt   DateTime @default(now())
+}
+
+model Comment {
+  id         String    @id @default(cuid())
+  postId     String
+  post       CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId   String?
+  parent     Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    Comment[] @relation("CommentReplies")
+  content    String    @db.Text
+  likes      Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  notifications Notification[]
+
+  @@index([postId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt(sort: Desc)])
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model PostFavorite {
+  id        String   @id @default(cuid())
+  postId    String
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId     String?
+  post       CommunityPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
+  commentId  String?
+  comment    Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  type       String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@index([postId])
+  @@index([commentId])
 }

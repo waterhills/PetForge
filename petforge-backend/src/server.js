@@ -48,6 +48,7 @@ app.use('/api/payments/wechat', (await import('./routes/payments-wechat.js')).de
 app.use('/api/payments/alipay', (await import('./routes/payments-alipay.js')).default);
 app.use('/api/points', (await import('./routes/points.js')).default);
 app.use('/api/admin', (await import('./routes/admin.js')).default);
+app.use('/api/community', (await import('./routes/community.js')).default);
 
 // Prompt Optimization Routes
 app.use('/api/prompt-optimization', (await import('./routes/prompt-optimization.js')).default);

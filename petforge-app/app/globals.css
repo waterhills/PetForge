@@ -40,6 +40,14 @@
     background-image: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 24px 24px;
   }
+
+  .masonry-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+  }
+
+  .masonry-item {
+    @apply break-inside-avoid;
+  }
 }
 
 @layer utilities {

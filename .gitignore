@@ -34,6 +34,11 @@ uploads/
 *.db
 *.db-journal
 
+# Prisma
+*.bak
+*.bak2
+prisma/migrations/
+
 # Claude Code
 .claude/
 
