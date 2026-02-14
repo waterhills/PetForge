@@ -33,6 +33,9 @@ export default function AdminLayout({
               <NavLink href="/admin/users" icon="👥">用户管理</NavLink>
             </li>
             <li>
+              <NavLink href="/admin/roles" icon="🔑">角色权限</NavLink>
+            </li>
+            <li>
               <NavLink href="/admin/petips" icon="🐾">宠物IP管理</NavLink>
             </li>
             <li>

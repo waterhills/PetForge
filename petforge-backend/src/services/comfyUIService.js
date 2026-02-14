@@ -6,6 +6,8 @@ import PromptService from './promptService.js';
 import GenerationQualityService from './generationQualityService.js';
 import NegativeDetectionService from './negativeDetectionService.js';
 import PromptABTestingService from './promptABTestingService.js';
+import { createLogger } from '../utils/logger.js';
+const logger = createLogger('comfyUIService');
 
 /**
  * Real ComfyUI Integration Service
@@ -22,7 +24,7 @@ class ComfyUIService {
     this.qualityAssessmentEnabled = process.env.COMFYUI_QUALITY_ASSESSMENT === 'true';
     this.negativeDetectionEnabled = process.env.COMFYUI_NEGATIVE_DETECTION === 'true';
 
-    console.log('[ComfyUI] Service initialized with optimizations:', {
+    logger.debug('Service initialized with optimizations:', {
       optimization: this.optimizationEnabled,
       abTesting: this.abTestingEnabled,
       qualityAssessment: this.qualityAssessmentEnabled,
@@ -45,16 +47,16 @@ class ComfyUIService {
 
       // 检查文件是否存在
       if (!fs.existsSync(workflowPath)) {
-        console.log(`[ComfyUI] Workflow file not found: ${workflowPath}, using default`);
+        logger.debug(`Workflow file not found: ${workflowPath}, using default`);
         return this.getDefaultWorkflow();
       }
 
       const workflowData = fs.readFileSync(workflowPath, 'utf-8');
       const workflow = JSON.parse(workflowData);
-      console.log(`[ComfyUI] Loaded workflow: ${workflowFilename}`);
+      logger.debug(`Loaded workflow: ${workflowFilename}`);
       return workflow;
     } catch (error) {
-      console.error(`[ComfyUI] Error loading workflow:`, error);
+      logger.error('Error loading workflow:', error);
       return this.getDefaultWorkflow();
     }
   }
@@ -155,10 +157,10 @@ class ComfyUIService {
       }
 
       const result = await response.json();
-      console.log('[ComfyUI] Image uploaded to ComfyUI:', result.name);
+      logger.debug('Image uploaded to ComfyUI:', result.name);
       return result.name; // 返回上传后的文件名
     } catch (error) {
-      console.error('[ComfyUI] Image upload error:', error);
+      logger.error('Image upload error:', error);
       throw error;
     }
   }
@@ -170,7 +172,7 @@ class ComfyUIService {
     try {
       const { style, petName, customPrompt, intensity = 1, detailLevel = 'medium' } = taskData;
 
-      console.log('[ComfyUI] Building optimized prompt for:', { style, petName, intensity, detailLevel });
+      logger.debug('[ComfyUI] Building optimized prompt for:', { style, petName, intensity, detailLevel });
 
       // 使用 Prompt 服务生成优化提示词
       const promptData = await PromptService.generatePrompt({
@@ -191,7 +193,7 @@ class ComfyUIService {
         const variant = promptData.variants[0];
         finalPrompt = variant.prompt;
         finalNegative = variant.negative;
-        console.log('[ComfyUI] Using A/B test variant:', variant.id);
+        logger.debug('[ComfyUI] Using A/B test variant:', variant.id);
       }
 
       // 如果启用了优化，进一步优化提示词
@@ -208,10 +210,10 @@ class ComfyUIService {
         });
         finalPrompt = optimized.optimized.positive;
         finalNegative = optimized.optimized.negative;
-        console.log('[ComfyUI] Prompt optimized with score:', optimized.quality.score);
+        logger.debug('[ComfyUI] Prompt optimized with score:', optimized.quality.score);
       }
 
-      console.log('[ComfyUI] Final prompt generated:', {
+      logger.debug('[ComfyUI] Final prompt generated:', {
         positive: finalPrompt.substring(0, 100) + '...',
         negative: finalNegative.substring(0, 100) + '...'
       });
@@ -219,7 +221,7 @@ class ComfyUIService {
       return { positive: finalPrompt, negative: finalNegative };
 
     } catch (error) {
-      console.error('[ComfyUI] Error building prompt:', error);
+      logger.error('[ComfyUI] Error building prompt:', error);
       // 回退到简单提示词
       return this.getFallbackPrompt(taskData);
     }
@@ -258,25 +260,25 @@ class ComfyUIService {
     // 修改正向提示词（节点2）
     if (customizedWorkflow['2'] && customizedWorkflow['2'].inputs) {
       customizedWorkflow['2'].inputs.text = promptData.positive;
-      console.log(`[ComfyUI] Customized prompt for ${taskData.style}: ${promptData.positive.substring(0, 50)}...`);
+      logger.debug(`[ComfyUI] Customized prompt for ${taskData.style}: ${promptData.positive.substring(0, 50)}...`);
     }
 
     // 修改反向提示词（节点3）
     if (customizedWorkflow['3'] && customizedWorkflow['3'].inputs) {
       customizedWorkflow['3'].inputs.text = promptData.negative;
-      console.log(`[ComfyUI] Customized negative prompt for ${taskData.style}: ${promptData.negative.substring(0, 50)}...`);
+      logger.debug(`[ComfyUI] Customized negative prompt for ${taskData.style}: ${promptData.negative.substring(0, 50)}...`);
     }
 
     // 设置随机种子（节点4）
     if (customizedWorkflow['4'] && customizedWorkflow['4'].inputs) {
       customizedWorkflow['4'].inputs.seed = Math.floor(Math.random() * 1000000000);
-      console.log(`[ComfyUI] Set random seed: ${customizedWorkflow['4'].inputs.seed}`);
+      logger.debug(`[ComfyUI] Set random seed: ${customizedWorkflow['4'].inputs.seed}`);
     }
 
     // 如果有输入图像且已上传，设置到LoadImage节点（节点10）
     if (uploadedImageName && customizedWorkflow['10'] && customizedWorkflow['10'].inputs) {
       customizedWorkflow['10'].inputs.image = uploadedImageName;
-      console.log(`[ComfyUI] Set input image: ${uploadedImageName}`);
+      logger.debug(`[ComfyUI] Set input image: ${uploadedImageName}`);
     }
 
     return customizedWorkflow;
@@ -289,7 +291,7 @@ class ComfyUIService {
     try {
       // 获取当前活跃的 A/B 测试
       // 这里简化处理，实际应该从配置或数据库获取
-      console.log('[ComfyUI] Recording A/B test sample for:', comfyTaskId);
+      logger.debug('[ComfyUI] Recording A/B test sample for:', comfyTaskId);
 
       // 模拟记录样本
       const sampleData = {
@@ -298,13 +300,13 @@ class ComfyUIService {
         timestamp: new Date().toISOString()
       };
 
-      console.log('[ComfyUI] A/B test sample recorded:', sampleData);
+      logger.debug('[ComfyUI] A/B test sample recorded:', sampleData);
 
       // 这里可以集成实际的 A/B 测试服务
       // await PromptABTestingService.recordSample(testId, variantId, resultData);
 
     } catch (error) {
-      console.error('[ComfyUI] Error recording A/B test sample:', error);
+      logger.error('[ComfyUI] Error recording A/B test sample:', error);
     }
   }
 
@@ -313,7 +315,7 @@ class ComfyUIService {
    */
   async processGenerationResult(taskId, resultData) {
     try {
-      console.log('[ComfyUI] Processing generation result for:', taskId);
+      logger.debug('[ComfyUI] Processing generation result for:', taskId);
 
       // 如果启用了负面样本检测
       if (this.negativeDetectionEnabled) {
@@ -324,14 +326,14 @@ class ComfyUIService {
           metadata: resultData.metadata
         });
 
-        console.log('[ComfyUI] Negative detection result:', {
+        logger.debug('[ComfyUI] Negative detection result:', {
           score: detection.overallScore,
           recommendation: detection.recommendation,
           issues: detection.issues
         });
 
         if (detection.overallScore < 0.3) {
-          console.log('[ComfyUI] Generation rejected due to negative sample detection');
+          logger.debug('[ComfyUI] Generation rejected due to negative sample detection');
           throw new Error('Generation rejected: Low quality detected');
         }
       }
@@ -344,14 +346,14 @@ class ComfyUIService {
           promptData: resultData.promptData
         });
 
-        console.log('[ComfyUI] Quality assessment result:', {
+        logger.debug('[ComfyUI] Quality assessment result:', {
           score: quality.score,
           recommendation: quality.recommendation
         });
 
         // 根据质量评估结果处理
         if (quality.score < 60) {
-          console.log('[ComfyUI] Quality below threshold, consider regenerating');
+          logger.debug('[ComfyUI] Quality below threshold, consider regenerating');
           // 可以选择自动重新生成或标记为需要审查
         }
       }
@@ -359,7 +361,7 @@ class ComfyUIService {
       return resultData;
 
     } catch (error) {
-      console.error('[ComfyUI] Error processing generation result:', error);
+      logger.error('[ComfyUI] Error processing generation result:', error);
       throw error;
     }
   }
@@ -371,8 +373,8 @@ class ComfyUIService {
     try {
       const { style = 'pixar', inputImage } = taskData;
 
-      console.log(`[ComfyUI] Queueing generation: style=${style}`);
-      console.log(`[ComfyUI] inputImage present: ${!!inputImage}, type: ${typeof inputImage}, length: ${inputImage?.length || 0}`);
+      logger.debug(`[ComfyUI] Queueing generation: style=${style}`);
+      logger.debug(`[ComfyUI] inputImage present: ${!!inputImage}, type: ${typeof inputImage}, length: ${inputImage?.length || 0}`);
 
       // 判断是否有输入图片
       const hasInputImage = !!inputImage;
@@ -380,7 +382,7 @@ class ComfyUIService {
 
       // 如果有输入图片，先上传到ComfyUI
       if (hasInputImage) {
-        console.log('[ComfyUI] Uploading input image for img2img...');
+        logger.debug('[ComfyUI] Uploading input image for img2img...');
         uploadedImageName = await this.uploadImageToComfyUI(inputImage);
       }
 
@@ -396,7 +398,7 @@ class ComfyUIService {
         prompt: customizedWorkflow, // ComfyUI API期望工作流对象，不是字符串
       };
 
-      console.log('[ComfyUI] Sending to ComfyUI:', JSON.stringify(requestBody, null, 2));
+      logger.debug('[ComfyUI] Sending to ComfyUI:', JSON.stringify(requestBody, null, 2));
 
       // 发送到ComfyUI
       const response = await fetch(`${this.comfyUIUrl}/prompt`, {
@@ -409,7 +411,7 @@ class ComfyUIService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`[ComfyUI] Request failed: ${response.status} ${errorText}`);
+        logger.error(`[ComfyUI] Request failed: ${response.status} ${errorText}`);
         throw new Error(`ComfyUI request failed: ${response.statusText} - ${errorText}`);
       }
 
@@ -417,12 +419,12 @@ class ComfyUIService {
 
       // ComfyUI返回 { prompt_id, number, node_errors }
       if (result.node_errors && Object.keys(result.node_errors).length > 0) {
-        console.error('[ComfyUI] Node errors:', result.node_errors);
+        logger.error('[ComfyUI] Node errors:', result.node_errors);
         throw new Error('ComfyUI workflow validation failed');
       }
 
       const taskId = result.prompt_id;
-      console.log(`[ComfyUI] Task queued: ${taskId}`);
+      logger.debug(`[ComfyUI] Task queued: ${taskId}`);
 
       // 如果启用了 A/B 测试，记录测试数据
       if (this.abTestingEnabled) {
@@ -432,7 +434,7 @@ class ComfyUIService {
       return taskId;
 
     } catch (error) {
-      console.error('[ComfyUI] Queue generation error:', error);
+      logger.error('[ComfyUI] Queue generation error:', error);
       throw error;
     }
   }
@@ -516,7 +518,7 @@ class ComfyUIService {
         error: null,
       };
 
-      console.log(`[ComfyUI] Status check: ${status} ${progress}%`);
+      logger.debug(`[ComfyUI] Status check: ${status} ${progress}%`);
 
       // 如果完成，处理结果
       if (status === 'completed' && this.qualityAssessmentEnabled) {
@@ -527,7 +529,7 @@ class ComfyUIService {
             promptData: null // 这里应该从数据库获取
           });
         } catch (processingError) {
-          console.error('[ComfyUI] Error processing completed generation:', processingError);
+          logger.error('[ComfyUI] Error processing completed generation:', processingError);
           // 标记为失败但保留结果URL
           result.status = 'failed';
           result.error = processingError.message;
@@ -537,7 +539,7 @@ class ComfyUIService {
       return result;
 
     } catch (error) {
-      console.error('[ComfyUI] Status check error:', error);
+      logger.error('[ComfyUI] Status check error:', error);
       throw error;
     }
   }
@@ -552,7 +554,7 @@ class ComfyUIService {
       const result = await this.checkStatus(taskId);
 
       if (result.status === 'completed') {
-        console.log('[ComfyUI] Generation completed successfully');
+        logger.debug('[ComfyUI] Generation completed successfully');
         return result;
       }
 
@@ -561,7 +563,7 @@ class ComfyUIService {
       }
 
       // 还在处理，等待重试
-      console.log(`[ComfyUI] Still processing... (${result.progress || 0}%) attempt ${attempts + 1}/${maxAttempts}`);
+      logger.debug(`[ComfyUI] Still processing... (${result.progress || 0}%) attempt ${attempts + 1}/${maxAttempts}`);
       await this.sleep(interval);
       attempts++;
     }

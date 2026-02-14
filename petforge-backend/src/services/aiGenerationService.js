@@ -1,4 +1,6 @@
 import fetch from 'node-fetch';
+import { createLogger } from '../utils/logger.js';
+const logger = createLogger('aiGenerationService');
 
 /**
  * AI Generation Service
@@ -36,7 +38,7 @@ class AIService {
         queue: 'default',
       };
 
-      console.log('[AI Service] Queueing generation:', JSON.stringify(requestBody, null, 2));
+      logger.debug('[AI Service] Queueing generation:', JSON.stringify(requestBody, null, 2));
 
       const response = await fetch(`${this.comfyUIUrl}/prompt`, {
         method: 'POST',
@@ -55,7 +57,7 @@ class AIService {
       return result.task_id || result.id; // Return task ID for tracking
 
     } catch (error) {
-      console.error('[AI Service] Queue generation error:', error);
+      logger.error('[AI Service] Queue generation error:', error);
       throw error;
     }
   }
@@ -132,12 +134,12 @@ class AIService {
         error: data.error || null,
       };
 
-      console.log('[AI Service] Generation status:', result);
+      logger.debug('[AI Service] Generation status:', result);
 
       return result;
 
     } catch (error) {
-      console.error('[AI Service] Status check error:', error);
+      logger.error('[AI Service] Status check error:', error);
       throw error;
     }
   }
@@ -182,18 +184,18 @@ class AIService {
 
       // Return if completed
       if (result.status === 'completed') {
-        console.log('[AI Service] Generation completed successfully');
+        logger.debug('[AI Service] Generation completed successfully');
         return result;
       }
 
       // Return if failed
       if (result.status === 'failed') {
-        console.error('[AI Service] Generation failed');
+        logger.error('[AI Service] Generation failed');
         return result;
       }
 
       // Still processing, wait and retry
-      console.log(`[AI Service] Still processing... (${result.progress || 0}%) attempt ${attempts + 1}/${maxAttempts}`);
+      logger.debug(`[AI Service] Still processing... (${result.progress || 0}%) attempt ${attempts + 1}/${maxAttempts}`);
 
       await this.sleep(interval);
       attempts++;
@@ -235,7 +237,7 @@ class AIService {
       },
     });
 
-    console.log('[AI Service] Generation record created:', generation.id);
+    logger.debug('[AI Service] Generation record created:', generation.id);
 
     return generation;
   }

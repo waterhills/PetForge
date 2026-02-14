@@ -1,5 +1,7 @@
 import fs from 'fs';
 import path from 'path';
+import { createLogger } from '../utils/logger.js';
+const logger = createLogger('generationQualityService');
 
 /**
  * 生成质量评估服务
@@ -46,7 +48,7 @@ class GenerationQualityService {
     try {
       const { resultUrl, metadata, promptData } = generationData;
 
-      console.log('[Quality] Starting quality assessment for:', resultUrl);
+      logger.debug('[Quality] Starting quality assessment for:', resultUrl);
 
       // 1. 基础信息检查
       const basicCheck = this.checkBasicInfo(generationData);
@@ -107,7 +109,7 @@ class GenerationQualityService {
       return assessment;
 
     } catch (error) {
-      console.error('[Quality] Error in quality assessment:', error);
+      logger.error('[Quality] Error in quality assessment:', error);
       return this.createAssessmentResult({
         score: 0,
         status: 'error',
@@ -314,7 +316,7 @@ class GenerationQualityService {
     // 这里应该集成图像分析服务
     // 目前使用模拟的评估逻辑
 
-    console.log('[Quality] Assessing image quality for:', imageUrl);
+    logger.debug('[Quality] Assessing image quality for:', imageUrl);
 
     // 模拟图像质量分数
     const baseScore = 70 + Math.random() * 25; // 70-95
@@ -561,7 +563,7 @@ class GenerationQualityService {
    */
   clearHistory() {
     this.assessmentCache.clear();
-    console.log('[Quality] Assessment history cleared');
+    logger.debug('[Quality] Assessment history cleared');
   }
 
   /**

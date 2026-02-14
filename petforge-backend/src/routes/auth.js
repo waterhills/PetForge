@@ -51,22 +51,37 @@ router.post('/register', async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user with initial credits
+    // Get default 'user' role
+    const defaultRole = await prisma.role.findUnique({
+      where: { name: 'user' },
+    });
+
+    // Create user with initial credits and default role
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name,
         credits: 100, // Initial credits for new users
+        roleId: defaultRole?.id, // Assign default role
       },
     });
 
-    // Generate token
+    // Generate token with role info
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: user.id, email: user.email, roleName: defaultRole?.name || 'user' },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
+
+    // Set httpOnly cookie for security
+    res.cookie('auth_token', token, {
+      httpOnly: true, // 防止 JS 读取 cookie（XSS 防护）
+      secure: process.env.NODE_ENV === 'production', // 生产环境强制 HTTPS
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // 开发环境用 lax 兼容跨端口
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/',
+    });
 
     res.status(201).json({
       success: true,
@@ -78,7 +93,6 @@ router.post('/register', async (req, res) => {
           avatar: user.avatar,
           credits: user.credits,
         },
-        token,
       },
     });
   } catch (error) {
@@ -101,9 +115,23 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = loginSchema.parse(req.body);
 
-    // Find user
+    // Find user with role
     const user = await prisma.user.findUnique({
       where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        name: true,
+        avatar: true,
+        credits: true,
+        role: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     if (!user || !user.password) {
@@ -123,12 +151,21 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Generate token
+    // Generate token with role info
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: user.id, email: user.email, roleName: user.role?.name || 'user' },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
+
+    // Set httpOnly cookie for security
+    res.cookie('auth_token', token, {
+      httpOnly: true, // 防止 JS 读取 cookie（XSS 防护）
+      secure: process.env.NODE_ENV === 'production', // 生产环境强制 HTTPS
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // 开发环境用 lax 兼容跨端口
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/',
+    });
 
     res.json({
       success: true,
@@ -140,7 +177,6 @@ router.post('/login', async (req, res) => {
           avatar: user.avatar,
           credits: user.credits,
         },
-        token,
       },
     });
   } catch (error) {

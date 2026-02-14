@@ -14,25 +14,22 @@ class ApiClient {
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
-
-    // Load token from localStorage on client side
-    if (typeof window !== 'undefined') {
-      this.token = localStorage.getItem('auth_token');
-    }
+    // Note: Token is now stored in httpOnly cookie by backend
+    // No need to load from localStorage
   }
 
   setToken(token: string) {
-    this.token = token;
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_token', token);
-    }
+    // DEPRECATED: Token is now stored in httpOnly cookie by backend
+    // This method is kept for backward compatibility but does nothing
+    console.warn('[DEPRECATED] setToken is no longer needed. Token is stored in httpOnly cookie.');
+    // Cookies are automatically handled by browser with credentials: 'include'
   }
 
   clearToken() {
-    this.token = null;
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
-    }
+    // DEPRECATED: Token is now stored in httpOnly cookie by backend
+    // This method is kept for backward compatibility but does nothing
+    console.warn('[DEPRECATED] clearToken is no longer needed. Use logout API endpoint instead.');
+    // Cookies are automatically handled by browser
   }
 
   private getHeaders(includeAuth = false): HeadersInit {
@@ -40,8 +37,12 @@ class ApiClient {
       'Content-Type': 'application/json',
     };
 
-    if (includeAuth && this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
+    // CRITICAL: Use credentials: 'include' to send httpOnly cookies
+    // This is safer than manual Authorization header
+    // Backend cookie will be sent automatically by browser
+    if (includeAuth) {
+      // Include auth if needed (e.g., for server-side calls)
+      // But for browser-to-API calls, cookies are sent automatically
     }
 
     return headers;
@@ -59,6 +60,8 @@ class ApiClient {
         ...this.getHeaders(includeAuth),
         ...options.headers,
       },
+      // CRITICAL: Include cookies for httpOnly cookie authentication
+      credentials: 'include',
     };
 
     const response = await fetch(url, config);
@@ -472,6 +475,58 @@ class ApiClient {
   async cancelGeneration(taskId: string) {
     return this.request(`/api/generation/${taskId}`, {
       method: 'DELETE',
+    }, true);
+  }
+
+  // RBAC - Role Management
+  async getAllRoles() {
+    return this.request('/api/admin/roles', {}, true);
+  }
+
+  async getRoleById(roleId: string) {
+    return this.request(`/api/admin/roles/${roleId}`, {}, true);
+  }
+
+  async createRole(data: {
+    name: string;
+    description?: string;
+    permissionIds?: string[];
+  }) {
+    return this.request('/api/admin/roles', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, true);
+  }
+
+  async updateRole(roleId: string, data: {
+    name?: string;
+    description?: string;
+    permissionIds?: string[];
+  }) {
+    return this.request(`/api/admin/roles/${roleId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, true);
+  }
+
+  async deleteRole(roleId: string) {
+    return this.request(`/api/admin/roles/${roleId}`, {
+      method: 'DELETE',
+    }, true);
+  }
+
+  async getAllPermissions() {
+    return this.request('/api/admin/permissions', {}, true);
+  }
+
+  async getGroupedPermissions() {
+    return this.request('/api/admin/permissions/grouped', {}, true);
+  }
+
+  async updateUserRole(userId: string, roleId: string) {
+    return this.request(`/api/admin/users/${userId}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ roleId }),
     }, true);
   }
 }

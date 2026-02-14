@@ -5,6 +5,8 @@
  */
 
 import * as AlipaySdk from "alipay-sdk";
+import { createLogger } from '../utils/logger.js';
+const logger = createLogger('alipayService');
 // Note: AlipayFormData import disabled
 
 let alipayInstance = null;
@@ -60,7 +62,7 @@ export async function createPagePayOrder(orderData) {
       transactionId,
     };
   } catch (error) {
-    console.error('Alipay create order error:', error);
+    logger.error('Alipay create order error:', error);
     throw new Error('Failed to create Alipay order: ' + error.message);
   }
 }
@@ -90,7 +92,7 @@ export async function createWapPayOrder(orderData) {
       transactionId,
     };
   } catch (error) {
-    console.error('Alipay WAP create order error:', error);
+    logger.error('Alipay WAP create order error:', error);
     throw new Error('Failed to create Alipay WAP order: ' + error.message);
   }
 }
@@ -120,7 +122,7 @@ export async function queryPayment(transactionId) {
       };
     }
   } catch (error) {
-    console.error('Alipay query error:', error);
+    logger.error('Alipay query error:', error);
     throw new Error('Failed to query Alipay: ' + error.message);
   }
 }
@@ -143,7 +145,7 @@ export async function verifyCallback(params) {
       tradeStatus: params.trade_status,
     };
   } catch (error) {
-    console.error('Alipay verify callback error:', error);
+    logger.error('Alipay verify callback error:', error);
     throw new Error('Failed to verify Alipay callback: ' + error.message);
   }
 }
@@ -164,7 +166,7 @@ export async function closeOrder(transactionId) {
       throw new Error(result.msg || result.subMsg);
     }
   } catch (error) {
-    console.error('Alipay close order error:', error);
+    logger.error('Alipay close order error:', error);
     throw new Error('Failed to close Alipay order: ' + error.message);
   }
 }
@@ -193,7 +195,7 @@ export async function createRefund(refundData) {
       throw new Error(result.msg || result.subMsg);
     }
   } catch (error) {
-    console.error('Alipay refund error:', error);
+    logger.error('Alipay refund error:', error);
     throw new Error('Failed to create Alipay refund: ' + error.message);
   }
 }

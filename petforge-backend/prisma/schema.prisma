@@ -18,6 +18,8 @@ model User {
   avatar           String?
   phone            String?
   bio              String?
+  roleId           String?
+  role             Role?              @relation(fields: [roleId], references: [id], onDelete: SetNull)
   credits          Int                @default(100)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
@@ -32,6 +34,42 @@ model User {
   postLikes        PostLike[]
   postFavorites    PostFavorite[]
   notifications    Notification[]
+}
+
+// Role-Based Access Control (RBAC) Models
+model Role {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  description String?
+  permissions RolePermission[]
+  users       User[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Permission {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  code        String       @unique // e.g., "users.view", "petips.delete"
+  resource    String       // e.g., "users", "petips", "orders"
+  action      String       // e.g., "view", "create", "edit", "delete"
+  description String?
+  roles       RolePermission[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
 }
 
 

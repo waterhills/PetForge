@@ -5,6 +5,8 @@
 
 import Wechatpay from 'wechatpay-node-v3';
 import fs from 'fs';
+import { createLogger } from '../utils/logger.js';
+const logger = createLogger('wechatPayService');
 
 let wechatpayInstance = null;
 
@@ -56,7 +58,7 @@ export async function createNativePayOrder(orderData) {
       transactionId,
     };
   } catch (error) {
-    console.error('WeChat Pay create order error:', error);
+    logger.error('WeChat Pay create order error:', error);
     throw new Error('Failed to create WeChat Pay order: ' + error.message);
   }
 }
@@ -78,7 +80,7 @@ export async function queryPayment(transactionId) {
       amount: result.amount?.total ? result.amount.total / 100 : 0,
     };
   } catch (error) {
-    console.error('WeChat Pay query error:', error);
+    logger.error('WeChat Pay query error:', error);
     throw new Error('Failed to query WeChat Pay: ' + error.message);
   }
 }
@@ -110,7 +112,7 @@ export async function verifyCallback(headers, body) {
       amount: decryptedData.amount?.total ? decryptedData.amount.total / 100 : 0,
     };
   } catch (error) {
-    console.error('WeChat Pay verify callback error:', error);
+    logger.error('WeChat Pay verify callback error:', error);
     throw new Error('Failed to verify WeChat Pay callback: ' + error.message);
   }
 }

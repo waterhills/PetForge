@@ -1,5 +1,7 @@
 import fs from 'fs';
 import path from 'path';
+import { createLogger } from '../utils/logger.js';
+const logger = createLogger('negativeDetectionService');
 
 /**
  * 负面样本检测服务
@@ -113,7 +115,7 @@ class NegativeDetectionService {
    */
   async detectNegativeSample(generationData) {
     try {
-      console.log('[NegativeDetection] Starting detection for:', generationData.id);
+      logger.debug('[NegativeDetection] Starting detection for:', generationData.id);
 
       const detectionResult = {
         id: generationData.id,
@@ -174,7 +176,7 @@ class NegativeDetectionService {
       // 9. 记录检测结果
       this.recordDetection(detectionResult);
 
-      console.log('[NegativeDetection] Detection completed:', {
+      logger.debug('[NegativeDetection] Detection completed:', {
         score: detectionResult.overallScore,
         recommendation: detectionResult.recommendation,
         issuesCount: detectionResult.issues.length
@@ -183,7 +185,7 @@ class NegativeDetectionService {
       return detectionResult;
 
     } catch (error) {
-      console.error('[NegativeDetection] Error in detection:', error);
+      logger.error('[NegativeDetection] Error in detection:', error);
       return {
         id: generationData.id,
         timestamp: new Date().toISOString(),
@@ -532,7 +534,7 @@ class NegativeDetectionService {
       const logEntry = JSON.stringify(detection) + '\n';
       fs.appendFileSync(logPath, logEntry);
     } catch (error) {
-      console.error('[NegativeDetection] Failed to log detection:', error);
+      logger.error('[NegativeDetection] Failed to log detection:', error);
     }
   }
 
@@ -587,7 +589,7 @@ class NegativeDetectionService {
     }
 
     this.negativePatterns[category][subCategory].push(...patterns);
-    console.log(`[NegativeDetection] Added patterns for ${category}.${subCategory}`);
+    logger.debug(`[NegativeDetection] Added patterns for ${category}.${subCategory}`);
   }
 
   /**
@@ -595,7 +597,7 @@ class NegativeDetectionService {
    */
   clearHistory() {
     this.detectionHistory = [];
-    console.log('[NegativeDetection] Detection history cleared');
+    logger.debug('[NegativeDetection] Detection history cleared');
   }
 
   /**

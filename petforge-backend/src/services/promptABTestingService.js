@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
+import { createLogger } from '../utils/logger.js';
+const logger = createLogger('promptABTestingService');
 
 /**
  * Prompt A/B 测试服务
@@ -85,7 +87,7 @@ class PromptABTestingService {
       this.activeTests.set(testId, test);
       this.saveTestData(test);
 
-      console.log(`[ABTest] Created test: ${testId} (${test.name})`);
+      logger.debug(`[ABTest] Created test: ${testId} (${test.name})`);
 
       return {
         success: true,
@@ -102,7 +104,7 @@ class PromptABTestingService {
       };
 
     } catch (error) {
-      console.error('[ABTest] Error creating test:', error);
+      logger.error('[ABTest] Error creating test:', error);
       return {
         success: false,
         error: error.message
@@ -154,7 +156,7 @@ class PromptABTestingService {
       test.startedAt = new Date().toISOString();
       this.activeTests.set(testId, test);
 
-      console.log(`[ABTest] Started test: ${testId}`);
+      logger.debug(`[ABTest] Started test: ${testId}`);
 
       return {
         success: true,
@@ -167,7 +169,7 @@ class PromptABTestingService {
       };
 
     } catch (error) {
-      console.error('[ABTest] Error starting test:', error);
+      logger.error('[ABTest] Error starting test:', error);
       return {
         success: false,
         error: error.message
@@ -215,7 +217,7 @@ class PromptABTestingService {
       // 保存数据
       this.saveTestData(test);
 
-      console.log(`[ABTest] Recorded sample for ${testId}, variant ${variantId}: ${score}`);
+      logger.debug(`[ABTest] Recorded sample for ${testId}, variant ${variantId}: ${score}`);
 
       return {
         success: true,
@@ -228,7 +230,7 @@ class PromptABTestingService {
       };
 
     } catch (error) {
-      console.error('[ABTest] Error recording sample:', error);
+      logger.error('[ABTest] Error recording sample:', error);
       return {
         success: false,
         error: error.message
@@ -330,7 +332,7 @@ class PromptABTestingService {
       // 保存历史
       this.saveTestHistory(test);
 
-      console.log(`[ABTest] Test ${testId} completed. Winner: ${winner?.variantId}, Confidence: ${confidence}`);
+      logger.debug(`[ABTest] Test ${testId} completed. Winner: ${winner?.variantId}, Confidence: ${confidence}`);
 
       return {
         success: true,
@@ -345,7 +347,7 @@ class PromptABTestingService {
       };
 
     } catch (error) {
-      console.error('[ABTest] Error analyzing results:', error);
+      logger.error('[ABTest] Error analyzing results:', error);
       return {
         success: false,
         error: error.message
@@ -535,7 +537,7 @@ class PromptABTestingService {
       // 更新统计
       this.testStats.cancelled++;
 
-      console.log(`[ABTest] Cancelled test: ${testId}`);
+      logger.debug(`[ABTest] Cancelled test: ${testId}`);
 
       return {
         success: true,
@@ -546,7 +548,7 @@ class PromptABTestingService {
       };
 
     } catch (error) {
-      console.error('[ABTest] Error cancelling test:', error);
+      logger.error('[ABTest] Error cancelling test:', error);
       return {
         success: false,
         error: error.message
@@ -624,7 +626,7 @@ class PromptABTestingService {
       const dataPath = path.join(process.cwd(), 'test-data', `${test.id}.json`);
       fs.writeFileSync(dataPath, JSON.stringify(test, null, 2));
     } catch (error) {
-      console.error('[ABTest] Error saving test data:', error);
+      logger.error('[ABTest] Error saving test data:', error);
     }
   }
 
@@ -638,7 +640,7 @@ class PromptABTestingService {
       history.push(test);
       fs.writeFileSync(historyPath, JSON.stringify(history, null, 2));
     } catch (error) {
-      console.error('[ABTest] Error saving test history:', error);
+      logger.error('[ABTest] Error saving test history:', error);
     }
   }
 
@@ -679,7 +681,7 @@ class PromptABTestingService {
     });
 
     if (expiredTests.length > 0) {
-      console.log(`[ABTest] Cleaned up ${expiredTests.length} expired tests`);
+      logger.debug(`[ABTest] Cleaned up ${expiredTests.length} expired tests`);
     }
   }
 

@@ -3,6 +3,9 @@ import { z } from 'zod';
 import prisma from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import aiGenerationService from '../services/aiGenerationService.js';
+import { createLogger } from '../utils/logger.js';
+
+const logger = createLogger('generation');
 
 const router = express.Router();
 
@@ -18,69 +21,6 @@ const checkStatusSchema = z.object({
   taskId: z.string().min(1),
 });
 
-// TEST ENDPOINT - Queue without auth (for testing only!)
-router.post('/queue-test', async (req, res) => {
-  try {
-    console.log('[TEST] Generation queue test endpoint called');
-
-    // Use a default test user ID
-    const userId = 'test-user-id';
-
-    const { type = 'image', style = 'pixar', petName = 'Test Pet', customPrompt = '' } = req.body;
-
-    console.log('[TEST] Creating test generation with:', { type, style, petName });
-
-    // Create a mock generation record
-    const generation = await prisma.generation.create({
-      data: {
-        userId,
-        type: type === '3d' ? '3d' : '2d',
-        status: 'pending',
-        prompt: JSON.stringify({ type, style, petName, customPrompt }),
-        inputImage: req.body.inputImage || null,
-        cost: type === '3d' ? 10 : 5,
-      },
-    });
-
-    const taskId = generation.id;
-
-    // Simulate completion after 3 seconds
-    setTimeout(async () => {
-      const styleImages = {
-        'pixar': 'https://lh3.googleusercontent.com/aida-public/AB6AXuC1Sa8qqFmL0M66DCtFnIEqEn8VgR9go5iUeFye7xfD0xoA6i_lrwoD2kz6ApKEcv-SqFgdfM3WVF8EKj3IQSZzkKQm3AXTDMrX_O9r9wyJ75KZhf332CDQQzNRes30YyuPqtXjyLP9q2AorxJJPnKk87oB3eHf_eMEONhAKXEDOOMLhjedCqImRAPfrJ-JSBSzcz_wRkjBIH8sSNZBsvCksoQo8uiZhrO8fUNOpo1WI3LSFmxLbNuAxozOoN_2Z28sNL00-mXgY1Jw',
-      };
-
-      await prisma.generation.update({
-        where: { id: taskId },
-        data: {
-          status: 'completed',
-          resultUrl: styleImages[style] || styleImages.pixar,
-          completedAt: new Date(),
-        },
-      });
-
-      console.log('[TEST] Mock generation completed for task:', taskId);
-    }, 3000);
-
-    res.json({
-      success: true,
-      data: {
-        taskId,
-        message: 'Test generation queued (no auth required)',
-        testMode: true,
-        estimatedTime: '3 seconds',
-      },
-    });
-
-  } catch (error) {
-    console.error('[TEST] Queue error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message || 'Test generation failed',
-    });
-  }
-});
-
 // Queue a new AI generation task
 router.post('/queue', authenticateToken, async (req, res) => {
   try {
@@ -89,13 +29,6 @@ router.post('/queue', authenticateToken, async (req, res) => {
 
     const { type = 'image', style = 'pixar', petName = '', customPrompt = '' } = validatedData;
     const userId = req.userId;
-
-    // Debug: log auth info
-    console.log('[Generation] Auth debug:', {
-      hasUser: !!req.user,
-      userId,
-      userEmail: req.user?.email
-    });
 
     if (!userId) {
       return res.status(401).json({
@@ -156,7 +89,7 @@ router.post('/queue', authenticateToken, async (req, res) => {
       });
     }
 
-    console.error('[Generation API] Queue error:', error);
+    logger.error('Queue error', error);
     res.status(500).json({
       success: false,
       error: 'Failed to queue generation',
@@ -192,7 +125,7 @@ router.get('/status/:taskId', authenticateToken, async (req, res) => {
       });
     }
 
-    console.error('[Generation API] Status check error:', error);
+    logger.error('Status check error', error);
     res.status(500).json({
       success: false,
       error: 'Failed to check generation status',
@@ -263,7 +196,7 @@ router.get('/history', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('[Generation API] History error:', error);
+    logger.error('History error', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch generation history',
@@ -305,7 +238,7 @@ router.delete('/:taskId', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('[Generation API] Cancel error:', error);
+    logger.error('Cancel error', error);
     res.status(500).json({
       success: false,
       error: 'Failed to cancel generation',

@@ -1,11 +1,12 @@
 import express from 'express';
 import prisma from '../config/database.js';
 import { authenticateToken as authMiddleware } from '../middleware/auth.js';
+import { requirePermission } from '../middleware/rbac.js';
 
 const router = express.Router();
 
-// Get dashboard stats
-router.get('/stats', async (req, res) => {
+// Get dashboard stats - requires admin.view-stats permission
+router.get('/stats', authMiddleware, requirePermission('admin.view-stats'), async (req, res) => {
   try {
     const [totalUsers, totalPetIPs, totalOrders, pendingOrders] = await Promise.all([
       prisma.user.count(),
@@ -44,8 +45,8 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-// Admin dashboard
-router.get('/dashboard', async (req, res) => {
+// Admin dashboard - requires admin.view-stats permission
+router.get('/dashboard', authMiddleware, requirePermission('admin.view-stats'), async (req, res) => {
   try {
     // 获取概览统计数据
     const [totalUsers, totalPetIPs, totalOrders] = await Promise.all([
@@ -54,7 +55,6 @@ router.get('/dashboard', async (req, res) => {
       prisma.order.count()
     ]);
 
-    // 获取最近活动
     // 获取最近活动
     const recentActivity = await prisma.$transaction(async (tx) => {
       const users = await tx.user.findMany({
@@ -121,8 +121,8 @@ router.get('/dashboard', async (req, res) => {
   }
 });
 
-// Get all users
-router.get('/users', async (req, res) => {
+// Get all users - requires users.view permission
+router.get('/users', authMiddleware, requirePermission('users.view'), async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
@@ -132,6 +132,14 @@ router.get('/users', async (req, res) => {
         name: true,
         avatar: true,
         credits: true,
+        roleId: true,
+        role: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+          },
+        },
         createdAt: true,
         _count: {
           select: {
@@ -155,8 +163,8 @@ router.get('/users', async (req, res) => {
   }
 });
 
-// Get user by ID
-router.get('/users/:id', async (req, res) => {
+// Get user by ID - requires users.view permission
+router.get('/users/:id', authMiddleware, requirePermission('users.view'), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -168,6 +176,14 @@ router.get('/users/:id', async (req, res) => {
         name: true,
         avatar: true,
         credits: true,
+        roleId: true,
+        role: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+          },
+        },
         createdAt: true,
         _count: {
           select: {
@@ -214,8 +230,8 @@ router.get('/users/:id', async (req, res) => {
   }
 });
 
-// Get all PetIPs
-router.get('/petips', async (req, res) => {
+// Get all PetIPs - requires petips.view permission
+router.get('/petips', authMiddleware, requirePermission('petips.view'), async (req, res) => {
   try {
     const { userId } = req.query;
     const where = userId ? { userId } : {};
@@ -254,8 +270,8 @@ router.get('/petips', async (req, res) => {
   }
 });
 
-// Get all orders
-router.get('/orders', async (req, res) => {
+// Get all orders - requires orders.view permission
+router.get('/orders', authMiddleware, requirePermission('orders.view'), async (req, res) => {
   try {
     const { userId } = req.query;
     const where = userId ? { userId } : {};
@@ -290,8 +306,8 @@ router.get('/orders', async (req, res) => {
   }
 });
 
-// Update order status
-router.patch('/orders/:id', async (req, res) => {
+// Update order status - requires orders.update-status permission
+router.patch('/orders/:id', authMiddleware, requirePermission('orders.update-status'), async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -314,8 +330,8 @@ router.patch('/orders/:id', async (req, res) => {
   }
 });
 
-// Create new PetIP
-router.post('/petips', authMiddleware, async (req, res) => {
+// Create new PetIP - requires petips.create permission
+router.post('/petips', authMiddleware, requirePermission('petips.create'), async (req, res) => {
   try {
     const { name, style, rarity, userId } = req.body;
 
@@ -364,8 +380,8 @@ router.post('/petips', authMiddleware, async (req, res) => {
   }
 });
 
-// Update PetIP
-router.put('/petips/:id', authMiddleware, async (req, res) => {
+// Update PetIP - requires petips.edit permission
+router.put('/petips/:id', authMiddleware, requirePermission('petips.edit'), async (req, res) => {
   try {
     const { id } = req.params;
     const { name, style, rarity, isPublic } = req.body;
@@ -414,8 +430,8 @@ router.put('/petips/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// Delete PetIP
-router.delete('/petips/:id', authMiddleware, async (req, res) => {
+// Delete PetIP - requires petips.delete permission
+router.delete('/petips/:id', authMiddleware, requirePermission('petips.delete'), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -449,8 +465,8 @@ router.delete('/petips/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// Create new Order
-router.post('/orders', authMiddleware, async (req, res) => {
+// Create new Order - requires orders.create permission
+router.post('/orders', authMiddleware, requirePermission('orders.create'), async (req, res) => {
   try {
     const {
       userId,
@@ -515,8 +531,8 @@ router.post('/orders', authMiddleware, async (req, res) => {
   }
 });
 
-// Delete Order
-router.delete('/orders/:id', authMiddleware, async (req, res) => {
+// Delete Order - requires orders.delete permission
+router.delete('/orders/:id', authMiddleware, requirePermission('orders.delete'), async (req, res) => {
   try {
     const { id } = req.params;
 

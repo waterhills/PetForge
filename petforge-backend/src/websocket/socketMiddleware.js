@@ -1,5 +1,7 @@
 // WebSocket 认证中间件
 import { WebSocketMessage } from './types.js';
+import { createLogger } from '../utils/logger.js';
+const logger = createLogger('socketMiddleware');
 
 export const authenticateWebSocket = (req) => {
   try {
@@ -35,7 +37,7 @@ export const authenticateWebSocket = (req) => {
       throw new Error(`Invalid token: ${error.message}`);
     }
   } catch (error) {
-    console.error('[WebSocket Auth] Error:', error);
+    logger.error('[WebSocket Auth] Error:', error);
     throw error;
   }
 };
@@ -55,10 +57,10 @@ export const createWebSocketAuthMiddleware = () => {
       // 添加认证时间戳
       socket.authenticatedAt = new Date();
 
-      console.log(`[WebSocket] User authenticated: ${socket.userId}`);
+      logger.debug(`[WebSocket] User authenticated: ${socket.userId}`);
       next();
     } catch (error) {
-      console.error('[WebSocket Auth] Authentication failed:', error);
+      logger.error('[WebSocket Auth] Authentication failed:', error);
 
       // 发送错误消息并断开连接
       const errorMsg = new WebSocketMessage('error', {
@@ -100,7 +102,7 @@ export const setupHeartbeat = (socket, interval = 30000) => {
 
       // 设置超时
       pingTimeout = setTimeout(() => {
-        console.warn(`[WebSocket] Heartbeat timeout for user: ${socket.userId}`);
+        logger.warn(`[WebSocket] Heartbeat timeout for user: ${socket.userId}`);
         socket.terminate();
       }, interval * 2);
     }

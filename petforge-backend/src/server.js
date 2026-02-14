@@ -1,12 +1,20 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import http from 'http';
+import helmet from 'helmet';
 import GenerationSocketServer from './websocket/generationSocket.js';
+import { generalLimiter, authLimiter, paymentLimiter, uploadLimiter } from './middleware/rateLimiter.js';
+import { validateEnv } from './utils/env.js';
+import { requestId } from './middleware/requestId.js';
 
 dotenv.config();
+
+// Validate environment variables before starting
+validateEnv();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,14 +25,53 @@ const PORT = process.env.PORT || 4000;
 // 创建 HTTP 服务器用于 WebSocket
 const server = http.createServer(app);
 
+// Request ID middleware (must be first)
+app.use(requestId);
+
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001', process.env.FRONTEND_URL].filter(Boolean),
+  origin: process.env.CORS_ORIGIN?.split(',') || [process.env.FRONTEND_URL].filter(Boolean),
   credentials: true,
 }));
 
+// Security headers with helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https:"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Allow multipart form data for file uploads
+  crossOriginOpenerPolicy: { policy: "same-origin" },
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  },
+  noSniff: true,
+  xssFilter: true,
+  referrerPolicy: { policy: "same-origin" }
+}));
+
+app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Rate limiting
+app.use('/api/', generalLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/payments', paymentLimiter);
+app.use('/api/upload', uploadLimiter);
+app.use('/api/upload-image', uploadLimiter);
 
 // Static files for uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -48,6 +95,7 @@ app.use('/api/payments/wechat', (await import('./routes/payments-wechat.js')).de
 app.use('/api/payments/alipay', (await import('./routes/payments-alipay.js')).default);
 app.use('/api/points', (await import('./routes/points.js')).default);
 app.use('/api/admin', (await import('./routes/admin.js')).default);
+app.use('/api/admin', (await import('./routes/admin-rbac.js')).default);
 app.use('/api/community', (await import('./routes/community.js')).default);
 
 // Prompt Optimization Routes
@@ -64,8 +112,6 @@ import { queueInitializer } from './queue/initQueue.js';
 app.use('/api/generation', comfyUIRouter);
 // Enable Bull queue routes
 app.use('/api/generation', queueGenerationRouter);
-// Simple test routes available as fallback
-// app.use('/api/generation', simpleGenerationRouter);
 
 // Error handling middleware
 import { errorHandler, notFoundHandler } from './utils/logger.js';

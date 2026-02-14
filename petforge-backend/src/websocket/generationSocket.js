@@ -4,6 +4,8 @@ import { EventEmitter } from 'events';
 import { GenerationUpdate, WebSocketMessage } from './types.js';
 import { createWebSocketAuthMiddleware, setupHeartbeat } from './socketMiddleware.js';
 import prisma from '../config/database.js';
+import { createLogger } from '../utils/logger.js';
+const logger = createLogger('generationSocket');
 
 class GenerationSocketServer extends EventEmitter {
   constructor(server) {
@@ -34,7 +36,7 @@ class GenerationSocketServer extends EventEmitter {
     // 启动清理任务
     this.startCleanupTask();
 
-    console.log('[WebSocket] GenerationSocketServer initialized');
+    logger.debug('[WebSocket] GenerationSocketServer initialized');
   }
 
   handleConnection(socket, req) {
@@ -46,7 +48,7 @@ class GenerationSocketServer extends EventEmitter {
       });
 
     } catch (error) {
-      console.error('[WebSocket] Connection error:', error);
+      logger.error('[WebSocket] Connection error:', error);
       socket.close(4001, error.message);
     }
   }
@@ -59,7 +61,7 @@ class GenerationSocketServer extends EventEmitter {
     setupHeartbeat(socket);
 
     // 添加连接日志
-    console.log(`[WebSocket] Client connected: ${clientId} (User: ${socket.userId})`);
+    logger.debug(`[WebSocket] Client connected: ${clientId} (User: ${socket.userId})`);
 
     // 添加到连接池
     if (!this.connectedClients.has(socket.userId)) {
@@ -86,7 +88,7 @@ class GenerationSocketServer extends EventEmitter {
 
     // 监听错误
     socket.on('error', (error) => {
-      console.error(`[WebSocket] Socket error for ${clientId}:`, error);
+      logger.error(`[WebSocket] Socket error for ${clientId}:`, error);
       this.handleDisconnect(socket);
     });
   }
@@ -107,10 +109,10 @@ class GenerationSocketServer extends EventEmitter {
           this.handlePing(socket);
           break;
         default:
-          console.warn(`[WebSocket] Unknown event: ${event}`);
+          logger.warn(`[WebSocket] Unknown event: ${event}`);
       }
     } catch (error) {
-      console.error('[WebSocket] Message handling error:', error);
+      logger.error('[WebSocket] Message handling error:', error);
 
       const errorMsg = new WebSocketMessage('error', {
         code: 'INVALID_MESSAGE',
@@ -165,7 +167,7 @@ class GenerationSocketServer extends EventEmitter {
       }
       this.taskSubscriptions.get(taskId).add(socket);
 
-      console.log(`[WebSocket] User ${socket.userId} subscribed to task ${taskId}`);
+      logger.debug(`[WebSocket] User ${socket.userId} subscribed to task ${taskId}`);
 
       // 发送订阅成功消息
       const successMsg = new WebSocketMessage('subscribed', {
@@ -175,7 +177,7 @@ class GenerationSocketServer extends EventEmitter {
       socket.send(JSON.stringify(successMsg.toJSON()));
 
     } catch (error) {
-      console.error('[WebSocket] Subscribe error:', error);
+      logger.error('[WebSocket] Subscribe error:', error);
 
       const errorMsg = new WebSocketMessage('error', {
         code: 'SUBSCRIBE_ERROR',
@@ -199,7 +201,7 @@ class GenerationSocketServer extends EventEmitter {
         }
       }
 
-      console.log(`[WebSocket] User ${socket.userId} unsubscribed from task ${taskId}`);
+      logger.debug(`[WebSocket] User ${socket.userId} unsubscribed from task ${taskId}`);
     }
   }
 
@@ -227,7 +229,7 @@ class GenerationSocketServer extends EventEmitter {
       }
     }
 
-    console.log(`[WebSocket] Client disconnected: ${socket.clientId}`);
+    logger.debug(`[WebSocket] Client disconnected: ${socket.clientId}`);
   }
 
   // 推送生成进度更新
@@ -254,7 +256,7 @@ class GenerationSocketServer extends EventEmitter {
       });
 
     } catch (error) {
-      console.error('[WebSocket] Error broadcasting progress update:', error);
+      logger.error('[WebSocket] Error broadcasting progress update:', error);
     }
   }
 
@@ -285,7 +287,7 @@ class GenerationSocketServer extends EventEmitter {
       });
 
     } catch (error) {
-      console.error('[WebSocket] Error broadcasting status change:', error);
+      logger.error('[WebSocket] Error broadcasting status change:', error);
     }
   }
 
@@ -326,7 +328,7 @@ class GenerationSocketServer extends EventEmitter {
       }
     }
 
-    console.log(`[WebSocket] Cleanup completed. Stats: ${JSON.stringify(this.getStats())}`);
+    logger.debug(`[WebSocket] Cleanup completed. Stats: ${JSON.stringify(this.getStats())}`);
   }
 }
 

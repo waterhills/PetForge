@@ -5,12 +5,20 @@ import { useRouter } from "next/navigation";
 import { SearchIcon } from "@/components/ui/icons";
 import api from "@/lib/api";
 
+interface Role {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
 interface User {
   id: string;
   email: string;
   name: string | null;
   avatar: string | null;
   credits: number;
+  roleId: string | null;
+  role: Role | null;
   createdAt: string;
   _count: {
     orders: number;
@@ -21,11 +29,14 @@ interface User {
 export default function AdminUsers() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   useEffect(() => {
     fetchUsers();
+    fetchRoles();
   }, []);
 
   const fetchUsers = async () => {
@@ -38,6 +49,32 @@ export default function AdminUsers() {
       console.error("Failed to fetch users:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const result = await api.getAllRoles();
+      if (result.success) {
+        setRoles(result.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch roles:", error);
+    }
+  };
+
+  const handleRoleChange = async (userId: string, roleId: string) => {
+    try {
+      const result = await api.updateUserRole(userId, roleId);
+      if (result.success) {
+        alert(`用户角色已更新为: ${result.data.role.name}`);
+        fetchUsers();
+      } else {
+        alert(result.error || "Failed to update user role");
+      }
+    } catch (error: any) {
+      console.error("Failed to update user role:", error);
+      alert(error.message || "Failed to update user role");
     }
   };
 
@@ -75,6 +112,7 @@ export default function AdminUsers() {
           <thead className="bg-gray-700">
             <tr>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">用户</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">角色</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">积分</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">宠物IP</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">订单</th>
@@ -85,13 +123,13 @@ export default function AdminUsers() {
           <tbody className="divide-y divide-gray-700">
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
+                <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
                   加载中...
                 </td>
               </tr>
             ) : filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
+                <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
                   {searchQuery ? "没有找到匹配的用户" : "暂无用户"}
                 </td>
               </tr>
@@ -99,8 +137,7 @@ export default function AdminUsers() {
               filteredUsers.map((user) => (
                 <tr
                   key={user.id}
-                  className="hover:bg-gray-700/50 transition-colors cursor-pointer"
-                  onClick={() => router.push(`/admin/users/${user.id}`)}
+                  className="hover:bg-gray-700/50 transition-colors"
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -118,6 +155,37 @@ export default function AdminUsers() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
+                    {editingUser?.id === user.id ? (
+                      <select
+                        value={user.roleId || ""}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                        onBlur={() => setEditingUser(null)}
+                        className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm focus:outline-none focus:border-purple-500"
+                        autoFocus
+                      >
+                        <option value="">无角色</option>
+                        {roles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <button
+                        onClick={() => setEditingUser(user)}
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                          user.role?.name === "admin"
+                            ? "bg-red-500/20 text-red-400"
+                            : user.role?.name === "moderator"
+                            ? "bg-blue-500/20 text-blue-400"
+                            : "bg-gray-700 text-gray-400"
+                        }`}
+                      >
+                        {user.role?.name || "无角色"}
+                      </button>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
                     <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
                       {user.credits} 积分
                     </span>
@@ -133,11 +201,10 @@ export default function AdminUsers() {
                         className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Edit action (placeholder)
-                          console.log("Edit user:", user.id);
+                          router.push(`/admin/users/${user.id}`);
                         }}
                       >
-                        编辑
+                        查看
                       </button>
                       <button
                         className="px-3 py-1 text-sm bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors"

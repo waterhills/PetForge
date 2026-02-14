@@ -9,6 +9,8 @@ import prisma from '../config/database.js';
 import wechatPayService from './wechatPayService.js';
 import alipayService from './alipayService.js';
 import { handlePaymentSuccess, handlePaymentFailure } from '../utils/orderStateMachine.js';
+import { createLogger } from '../utils/logger.js';
+const logger = createLogger('paymentService');
 
 const PAYMENT_METHOD = {
   WECHAT: 'wechat',
@@ -74,7 +76,7 @@ export async function createPayment(orderId, transactionId, paymentMethod, amoun
       ...result,
     };
   } catch (error) {
-    console.error('Create payment error:', error);
+    logger.error('Create payment error:', error);
     throw error;
   }
 }

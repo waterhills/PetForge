@@ -51,8 +51,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
             user,
             isAuthenticated: true,
           })
-          // Update API client with token
-          api.setToken(savedToken)
         } catch (error) {
           console.error('Failed to parse saved user:', error)
           // Clear invalid data
@@ -185,9 +183,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_user')
     }
-
-    // Clear API client token
-    api.clearToken()
   },
 
   clearError: () => set({ error: null }),

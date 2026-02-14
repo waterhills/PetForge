@@ -2,6 +2,8 @@ import express from 'express';
 import prisma from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { z } from 'zod';
+import { createLogger } from '../utils/logger.js';
+const logger = createLogger('orders');
 
 const router = express.Router();
 
@@ -115,7 +117,7 @@ router.get('/', authenticateToken, async (req, res) => {
         error: error.errors,
       });
     }
-    console.error('Get orders error:', error);
+    logger.error('Get orders error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to get orders',
@@ -162,7 +164,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
       data: order,
     });
   } catch (error) {
-    console.error('Get order error:', error);
+    logger.error('Get order error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to get order',
@@ -322,7 +324,7 @@ router.post('/', authenticateToken, async (req, res) => {
         error: error.errors,
       });
     }
-    console.error('Create order error:', error);
+    logger.error('Create order error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to create order',
@@ -382,7 +384,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
       data: order,
     });
   } catch (error) {
-    console.error('Update order error:', error);
+    logger.error('Update order error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to update order',
