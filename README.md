@@ -1,214 +1,382 @@
-# PetForge 项目全面改进实施计划
+# PetForge - AI 宠物 IP 生成平台
 
-## 📊 项目概述
+> 基于 Next.js 和 Express.js 的全栈应用，支持 AI 生成 3D 宠物 IP、社区互动、定制周边商品
 
-**项目名称**: PetForge - 宠物IP生成平台
-**当前状态**: 功能完整，生产就绪度不足
-**改进目标**: 测试覆盖 / 支付系统 / AI优化 / 生产环境
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node Version](https://img.shields.io/badge/node-%3E%3C20.1.0-brightgreen.svg)](https://nodejs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15.0.0-black.svg)](https://nextjs.org/)
 
-**技术栈**:
-- 前端: Next.js 14 + React + TypeScript + Tailwind CSS
-- 后端: Express.js + Prisma ORM + SQLite
-- AI: ComfyUI集成（图生图工作流）
+## ✨ 功能特性
 
----
+### 🎨 核心 AI 生成
+- **文本生成 3D 宠物**：输入描述，AI 自动生成独一无二的三维宠物形象
+- **多种风格支持**：赛博朋克、机甲兽、全息幻影等多种艺术风格
+- **图片优化**：AI 自动优化提示词，提升生成质量
+- **实时进度**：WebSocket 实时显示生成进度
 
-## 📅 分阶段实施计划
+### 💬 社区互动
+- **发布动态**：分享你的宠物 IP 到社区
+- **评论互动**：支持4级嵌套评论的深度讨论
+- **点赞收藏**：点赞和收藏喜欢的作品
+- **通知系统**：实时接收互动通知
+- **隐私控制**：公开/私密帖子设置
 
-### Phase 1: 测试基础设施建设 (Week 1-2)
+### 🛍 商品定制
+- **周边商城**：将宠物 IP 定制到 T 恤、马克杯、手机壳等实物
+- **购物车**：完整的购物车管理
+- **订单系统**：完整的订单流程和状态追踪
+- **支付集成**：微信支付、支付宝支付接口
 
-**目标**: 建立80%+测试覆盖率
+### 🎁 用户系统
+- **JWT 认证**：安全的用户认证系统
+- **个人资料**：用户头像、昵称、简介管理
+- **地址管理**：多个收货地址管理
+- **积分系统**：积分累积和消费
 
-#### 主要任务
+## 🛠 技术栈
 
-**Week 1**: 测试框架搭建 + 单元测试
-- 安装 Vitest (前端) + Jest (后端) + Playwright (E2E)
-- 配置测试脚本 (test:unit, test:integration, test:e2e, test:coverage)
-- 创建测试工具
-- 编写高优先级单元测试 (认证、API客户端)
+### 前端 (petforge-app)
+- **框架**：Next.js 15.0 (App Router)
+- **语言**：TypeScript 5.7
+- **样式**：Tailwind CSS 3.4
+- **状态管理**：React Hooks
+- **UI 组件**：自定义组件库
 
-**Week 2**: 集成测试 + E2E测试
-- 编写中优先级单元测试 (购物车、工具函数)
-- API集成测试 (认证、生成、订单流程)
-- E2E测试场景 (用户旅程)
+### 后端 (petforge-backend)
+- **框架**：Express.js 4.21
+- **语言**：Node.js 22.22 (ES Modules)
+- **数据库**：PostgreSQL 16
+- **ORM**：Prisma 5.22
+- **认证**：JWT (jsonwebtoken)
+- **文件上传**：Multer
+- **WebSocket**：Socket.IO
+- **任务队列**：Bull + Redis
 
-#### 验证标准
+### AI 服务
+- **ComfyUI**：AI 图像生成工作流引擎
+- **Stable Diffusion**：图像生成模型
 
-```bash
-npm run test:coverage
-# Statements: 80%+, Branches: 75%+, Functions: 85%+, Lines: 80%+
-```
+## 📦 安装步骤
 
----
+### 前置要求
+- Node.js >= 20.1.0
+- PostgreSQL >= 14
+- Redis >= 6.0 (用于任务队列)
 
-### Phase 2: 支付系统完善 (Week 3-4)
-
-**目标**: 集成真实支付网关
-
-**Week 3**: 支付网关 + 状态机
-- 集成微信支付 SDK (`wechatpay-node-v3`)
-- 集成支付宝 SDK (`alipay-sdk`)
-- 实现订单状态机
-- 支付回调验证 (签名、IP白名单、幂等性)
-
-**Week 4**: 重试机制 + 订单管理
-- 失败重试机制 (3次，指数退避)
-- 订单状态变更历史
-- 退款处理流程
-
----
-
-### Phase 3: AI生成优化 (Week 5-6)
-
-**目标**: 优化性能，实现队列管理和实时推送
-
-**Week 5**: 队列系统 + WebSocket
-- 集成 Redis + Bull 队列
-- 实现生成任务队列
-- WebSocket 实时进度推送
-
-**Week 6**: Prompt优化 + 性能调优
-- 优化 Prompt 模板
-- 实现质量评估
-- 性能优化 (批量生成、缓存)
-
-#### 验证指标
-
-- 队列响应: < 500ms
-- WebSocket连接: < 100ms
-- 生成成功率: > 95%
-- 生成时间: < 60s
-
----
-
-### Phase 4: 生产环境准备 (Week 7-8)
-
-**目标**: 迁移到生产级基础设施
-
-**Week 7**: 数据库迁移 + 云存储
-- SQLite → PostgreSQL
-- 集成云存储 (阿里云OSS / AWS S3)
-- 数据迁移脚本
-
-**Week 8**: 监控日志 + 安全加固
-- Sentry 错误追踪
-- Winston 结构化日志
-- API限流、CSRF防护
-- HTTPS强制
-
----
-
-## 📁 关键文件清单
-
-### 需要创建的文件
-
-**测试**:
-- `petforge-app/tests/` (Vitest配置、测试文件)
-- `petforge-app/e2e/` (Playwright测试)
-- `petforge-backend/tests/` (Jest配置、测试文件)
-
-**支付系统**:
-- `src/services/paymentService.js`
-- `src/services/wechatPayService.js`
-- `src/services/alipayService.js`
-- `src/routes/payments-wechat.js`
-- `src/routes/payments-alipay.js`
-
-**AI优化**:
-- `src/queue/generationQueue.js` ✅
-- `src/queue/generationProcessor.js` ✅
-- `src/queue/queueMonitor.js` ✅
-- `src/queue/initQueue.js` ✅
-- `src/routes/generation-queue.js` ✅
-- `src/websocket/generationSocket.js` ✅
-
-**生产环境**:
-- `src/services/storageService.js`
-- `src/utils/logger.js`
-- `src/utils/sentry.js`
-- `scripts/migrate-to-postgres.js`
-
-### 需要修改的关键文件
-
-1. `prisma/schema.prisma` - 数据库模型更新 ✅
-2. `src/routes/payments.js` - 支付网关集成 ✅
-3. `src/routes/generation-comfyui.js` - 队列+WebSocket ✅
-4. `src/services/comfyUIService.js` - 重试+性能优化 ✅
-5. `lib/api.ts` - 前端API客户端
-6. `src/server.js` - 集成队列系统 ✅
-
----
-
-## ✅ 时间表
-
-```
-Week 1-2: Phase 1 - 测试基础
-Week 3-4: Phase 2 - 支付系统
-Week 5-6: Phase 3 - AI优化
-Week 7-8: Phase 4 - 生产环境
-```
-
-**里程碑**:
-- Week 2: 测试覆盖率80% ✅
-- Week 4: 真实支付可用 ✅
-- Week 6: AI性能提升50% ✅ (队列系统已完成)
-- Week 8: 生产环境上线 🚀
-
----
-
-## 🚀 快速开始
-
-### 安装测试依赖
+### 1. 克隆仓库
 
 ```bash
-# 前端
+git clone https://github.com/waterhills/PetForge.git
+cd PetForge
+```
+
+### 2. 安装依赖
+
+```bash
+# 安装前端依赖
 cd petforge-app
-npm install -D vitest @testing-library/react @testing-library/user-event @vitest/ui
-npm install -D @playwright/test
+npm install
 
-# 后端
-cd petforge-backend
-npm install -D jest supertest @types/jest
+# 安装后端依赖
+cd ../petforge-backend
+npm install
 ```
 
-### 创建第一个测试文件
+### 3. 配置环境变量
+
+#### 后端配置
+```bash
+cd petforge-backend
+cp .env.example .env
+```
+
+编辑 `.env` 文件：
+
+```env
+# 服务器配置
+NODE_ENV=development
+PORT=4000
+
+# 数据库
+DATABASE_URL="postgresql://username:password@localhost:5432/petforge?schema=public"
+
+# JWT 密钥（请更改为随机字符串）
+JWT_SECRET=your-secret-key-change-this
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# 前端 URL（用于 CORS）
+FRONTEND_URL=http://localhost:3000
+
+# AI 服务
+COMFYUI_URL=http://localhost:8188
+
+# 支付配置（可选）
+WECHAT_APP_ID=your_wechat_app_id
+WECHAT_APP_SECRET=your_wechat_app_secret
+ALIPAY_APP_ID=your_alipay_app_id
+ALIPAY_PRIVATE_KEY=your_alipay_private_key
+```
+
+#### 前端配置
+```bash
+cd petforge-app
+cp .env.local.example .env.local
+```
+
+编辑 `.env.local` 文件：
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000
+```
+
+### 4. 初始化数据库
 
 ```bash
-# petforge-app/tests/store/authStore.test.ts
-import { describe, it, expect, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
-import { useAuthStore } from '../store/authStore';
+cd petforge-backend
 
-describe('AuthStore', () => {
-  it('should initialize with default state', () => {
-    const { result } = renderHook(() => useAuthStore());
-    expect(result.current.user).toBeNull();
-    expect(result.current.isAuthenticated).toBe(false);
-  });
-});
+# 生成 Prisma Client
+npx prisma generate
+
+# 运行数据库迁移
+npx prisma migrate deploy
+
+# （可选）填充示例数据
+npx prisma db seed
 ```
+
+### 5. 启动 Redis
+
+```bash
+# Windows
+redis-server
+
+# Linux/Mac
+redis-server
+```
+
+### 6. 启动后端服务
+
+```bash
+cd petforge-backend
+npm start
+```
+
+后端将运行在 http://localhost:4000
+
+### 7. 启动前端服务
+
+```bash
+cd petforge-app
+npm run dev
+```
+
+前端将运行在 http://localhost:3000
+
+## 🚀 运行指南
+
+### 开发模式
+
+**终端 1 - 后端**：
+```bash
+cd petforge-backend
+npm start
+```
+
+**终端 2 - 前端**：
+```bash
+cd petforge-app
+npm run dev
+```
+
+访问 http://localhost:3000 查看应用
+
+### 生产模式
+
+#### 构建前端
+```bash
+cd petforge-app
+npm run build
+npm start
+```
+
+#### 使用 PM2 运行后端（推荐）
+```bash
+cd petforge-backend
+npm install -g pm2
+pm2 start ecosystem.config.cjs
+```
+
+## 📁 项目结构
+
+```
+PetForge/
+├── petforge-app/                 # Next.js 前端
+│   ├── app/                      # App Router 页面
+│   │   ├── community/            # 社区模块
+│   │   │   ├── page.tsx         # 社区主页
+│   │   │   ├── create/          # 发布动态
+│   │   │   └── post/[id]/       # 动态详情
+│   │   ├── upload/               # 上传生成
+│   │   └── layout.tsx            # 根布局
+│   ├── components/               # React 组件
+│   │   ├── community/            # 社区组件
+│   │   └── layout/               # 布局组件
+│   ├── lib/                     # 工具库
+│   │   ├── api.ts                 # API 客户端
+│   │   └── communityApi.ts       # 社区 API
+│   └── types/                   # TypeScript 类型
+│
+├── petforge-backend/            # Express.js 后端
+│   ├── prisma/                  # Prisma ORM
+│   │   └── schema.prisma          # 数据库 Schema
+│   ├── src/                     # 源代码
+│   │   ├── config/                # 配置文件
+│   │   ├── middleware/            # 中间件
+│   │   ├── routes/                # API 路由
+│   │   │   ├── auth.js          # 认证
+│   │   │   ├── community.js     # 社区
+│   │   │   └── ...
+│   │   ├── websocket/             # WebSocket
+│   │   └── server.js               # 服务器入口
+│   └── uploads/                  # 用户上传文件
+│
+└── README.md                    # 项目说明
+```
+
+## 🔧 API 文档
+
+### 认证 API
+
+#### 注册
+```
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "name": "用户名"
+}
+```
+
+#### 登录
+```
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+### 社区 API
+
+#### 获取动态列表
+```
+GET /api/community/posts?page=1&limit=20
+Authorization: Bearer {token}
+```
+
+#### 发布动态
+```
+POST /api/community/posts
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "petIpId": "cuid...",
+  "content": "分享我的宠物 IP！",
+  "isPublic": true
+}
+```
+
+#### 点赞动态
+```
+POST /api/community/posts/{id}/like
+Authorization: Bearer {token}
+```
+
+#### 评论动态
+```
+POST /api/community/posts/{postId}/comments
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "content": "太棒了！",
+  "parentId": "cuid..."  // 可选，用于回复
+}
+```
+
+完整 API 文档请查看：[API.md](./docs/API.md)
+
+## 🧪 测试
 
 ### 运行测试
 
 ```bash
-# 单元测试
-npm run test:unit
+# 后端测试
+cd petforge-backend
+npm test
 
-# 覆盖率报告
-npm run test:coverage
+# 前端测试
+cd petforge-app
+npm test
+
+# E2E 测试
+cd petforge-app
+npm run test:e2e
 ```
 
+## 🐛 调试
+
+### 后端
+```bash
+cd petforge-backend
+npm run debug
+```
+
+### 前端
+```bash
+cd petforge-app
+npm run debug
+```
+
+## 📝 贡献指南
+
+我们欢迎所有形式的贡献！
+
+### 贡献流程
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
+
+### 开发规范
+- 遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范
+- 编写测试覆盖率 >= 80%
+- 遵循 ESLint 和 Prettier 代码规范
+
+## 📄 许可证
+
+本项目基于 [MIT License](LICENSE) 开源。
+
+## 👥 作者
+
+**PetForge Team**
+
+## 🙏 致谢
+
+- [Next.js](https://nextjs.org/) - React 框架
+- [Express.js](https://expressjs.com/) - Node.js Web 框架
+- [Prisma](https://www.prisma.io/) - Next-Gen ORM
+- [Tailwind CSS](https://tailwindcss.com/) - CSS 框架
+- [ComfyUI](https://github.com/comfyanonymous/ComfyUI) - AI 图像生成界面
+
 ---
 
-## 📚 相关文档
-
-- [Prisma 文档](https://www.prisma.io/docs)
-- [Vitest 文档](https://vitest.dev/)
-- [Playwright 文档](https://playwright.dev/)
-- [微信支付文档](https://pay.weixin.qq.com/wiki/doc/api/index.html)
-- [支付宝文档](https://opendocs.alipay.com/)
-- [Bull 队列文档](https://docs.bullmq.io/)
-
----
-
-**准备好开始了？从哪个 Phase 开始实施？**
+**⭐ 如果这个项目对你有帮助，请给我们一个 Star！**
