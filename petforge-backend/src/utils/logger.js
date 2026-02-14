@@ -37,15 +37,29 @@ if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }
 
-// 日志格式
+// 安全的 JSON 序列化函数，处理循环引用
+const safeStringify = (obj) => {
+  const cache = new Set();
+  try {
+    return JSON.stringify(obj, (key, value) => {
+      if (typeof value === 'object' && value !== null) {
+        if (cache.has(value)) {
+          return '[Circular]';
+        }
+        cache.add(value);
+      }
+      return value;
+    });
+  } catch (error) {
+    return '[Log Error: Failed to stringify meta]';
+  }
+};
+
+// 日志格式（纯 JSON，用于文件）
 const logFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
   winston.format.errors({ stack: true }),
-  winston.format.json(),
-  winston.format.printf(({ timestamp, level, message, ...meta }) => {
-    const metaString = Object.keys(meta).length > 0 ? JSON.stringify(meta) : '';
-    return `${timestamp} [${level.toUpperCase()}]: ${message} ${metaString}`;
-  })
+  winston.format.json()
 );
 
 // 控制台格式（带颜色）
@@ -53,7 +67,7 @@ const consoleFormat = winston.format.combine(
   winston.format.colorize({ all: true }),
   winston.format.timestamp({ format: 'HH:mm:ss' }),
   winston.format.printf(({ timestamp, level, message, ...meta }) => {
-    const metaString = Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : '';
+    const metaString = Object.keys(meta).length > 0 ? ` ${safeStringify(meta)}` : '';
     return `${timestamp} [${level}]: ${message}${metaString}`;
   })
 );
@@ -149,9 +163,14 @@ export function createLogger(module) {
 
     /**
      * 记录性能日志
+     * duration >= 1000ms 时使用 info 级别，否则使用 debug
      */
     performance: (operation, duration, meta = {}) => {
-      logger.info(`PERFORMANCE: ${operation} completed in ${duration}ms`, {
+      const isSlow = duration >= 1000;
+      const logLevel = isSlow ? 'info' : 'debug';
+      const prefix = isSlow ? 'SLOW PERFORMANCE' : 'PERFORMANCE';
+
+      logger[logLevel](`${prefix}: ${operation} completed in ${duration}ms`, {
         ...meta,
         module,
         duration,
@@ -198,8 +217,7 @@ export function createLogger(module) {
         ...meta,
         module,
         event,
-        severity,
-        timestamp: new Date().toISOString()
+        severity
       });
     },
 
@@ -211,8 +229,7 @@ export function createLogger(module) {
         ...meta,
         module,
         event,
-        data,
-        timestamp: new Date().toISOString()
+        data
       });
     }
   };

@@ -2,6 +2,10 @@ export default {
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
   testMatch: ['**/tests/**/*.test.js'],
+  transform: {},
+  moduleNameMapper: {
+    '^(\.{1,2}/.*)\.js$': '$1',
+  },
   collectCoverageFrom: [
     'src/**/*.js',
     '!src/server.js',
