@@ -5,6 +5,13 @@ class ApiClient {
   private baseUrl: string;
   private token: string | null = null;
 
+  async updateUserCredits(userId: string, newCredits: number) {
+    return this.request(`/api/admin/users/${userId}/credits`, {
+      method: 'PATCH',
+      body: JSON.stringify({ credits: newCredits }),
+    }, true);
+  }
+
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
 
@@ -94,8 +101,8 @@ class ApiClient {
     return this.request('/api/auth/me', {}, true);
   }
 
-  // 添加商品到购物车（新端点）
-  async addToCart(petIpId: string, quantity: number = 1, productType?: string, productName?: string, price?: number, size?: string, baseStyle?: string) {
+  // 添加商品到购物车（旧端点，保留兼容但推荐使用下方完整版 addToCart）
+  async addToCartSimple(petIpId: string, quantity: number = 1, productType?: string, productName?: string, price?: number, size?: string, baseStyle?: string) {
     return this.request('/api/cart/add', {
       method: 'POST',
       body: JSON.stringify({ petIpId, quantity, productType, productName, price, size, baseStyle }),
@@ -246,6 +253,78 @@ class ApiClient {
 
   async getAllOrders() {
     return this.request('/api/admin/orders', {}, true);
+  }
+
+  async getUserById(userId: string) {
+    return this.request(`/api/admin/users/${userId}`, {}, true);
+  }
+
+  async getUserPetIPs(userId: string) {
+    return this.request(`/api/admin/petips?userId=${userId}`, {}, true);
+  }
+
+  async getUserOrders(userId: string) {
+    return this.request(`/api/admin/orders?userId=${userId}`, {}, true);
+  }
+
+  // 管理端创建 PetIP，与用户端 createPetIP 区分
+  async adminCreatePetIP(data: {
+    name: string;
+    style: string;
+    rarity: string;
+    userId: string;
+  }) {
+    return this.request('/api/admin/petips', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, true);
+  }
+
+  async updatePetIP(id: string, data: {
+    name?: string;
+    style?: string;
+    rarity?: string;
+    isPublic?: boolean;
+  }) {
+    return this.request(`/api/admin/petips/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, true);
+  }
+
+  async deletePetIP(id: string) {
+    return this.request(`/api/admin/petips/${id}`, {
+      method: 'DELETE',
+    }, true);
+  }
+
+  // 管理端创建订单，与用户端 createOrder 区分
+  async adminCreateOrder(data: {
+    userId: string;
+    items: Array<{
+      productType: string;
+      productName: string;
+      price: number;
+      quantity: number;
+      size?: string;
+      baseStyle?: string;
+    }>;
+    receiverName: string;
+    receiverPhone: string;
+    receiverAddress: string;
+    paymentMethod: string;
+    totalAmount: number;
+  }) {
+    return this.request('/api/admin/orders', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, true);
+  }
+
+  async deleteOrder(id: string) {
+    return this.request(`/api/admin/orders/${id}`, {
+      method: 'DELETE',
+    }, true);
   }
 
   // Payment endpoints

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { SearchIcon } from "@/components/ui/icons";
 import api from "@/lib/api";
 import Modal from "@/components/admin/Modal";
@@ -12,36 +12,32 @@ interface Order {
   orderNumber: string;
   totalAmount: number;
   status: string;
-  paymentMethod: string;
+  createdAt: string;
   receiverName: string;
   receiverPhone: string;
-  receiverAddress: string;
-  createdAt: string;
-  user: {
-    email: string;
-  };
-  _count: {
-    items: number;
-  };
 }
 
-export default function AdminOrders() {
+interface UserOrdersProps {
+  userId: string;
+}
+
+export default function UserOrders({ userId }: UserOrdersProps) {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [users, setUsers] = useState<any[]>([]);
 
   useEffect(() => {
     fetchOrders();
-    fetchUsers();
-  }, []);
+  }, [userId]);
 
   const fetchOrders = async () => {
+    setLoading(true);
     try {
-      const result = await api.getAllOrders();
+      const result = await api.getUserOrders(userId);
       if (result.success) {
         setOrders(result.data);
       }
@@ -51,6 +47,10 @@ export default function AdminOrders() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const fetchUsers = async () => {
     try {
@@ -63,18 +63,9 @@ export default function AdminOrders() {
     }
   };
 
-  const updateOrderStatus = async (orderId: string, status: string) => {
-    try {
-      await api.updateOrderStatus(orderId, status);
-      fetchOrders();
-    } catch (error) {
-      console.error("Failed to update order:", error);
-    }
-  };
-
   const handleCreateOrder = async (data: any) => {
     try {
-      const result = await api.adminCreateOrder(data);
+      const result = await api.createOrder(data);
       if (result.success) {
         setToast({ message: '订单创建成功', type: 'success' });
         setShowCreateModal(false);
@@ -106,10 +97,15 @@ export default function AdminOrders() {
     }
   };
 
-  const filteredOrders = orders.filter((order) =>
-    order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.receiverName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredOrders = useMemo(() => {
+    if (!searchQuery) return orders;
+    const query = searchQuery.toLowerCase();
+    return orders.filter(
+      (order) =>
+        order.orderNumber.toLowerCase().includes(query) ||
+        order.receiverName.toLowerCase().includes(query)
+    );
+  }, [orders, searchQuery]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -139,33 +135,11 @@ export default function AdminOrders() {
     return labels[status] || status;
   };
 
-  const getPaymentLabel = (method: string) => {
-    const labels: Record<string, string> = {
-      wechat: "微信支付",
-      alipay: "支付宝",
-      card: "信用卡",
-    };
-    return labels[method] || method;
-  };
-
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-white">订单管理</h1>
-          <p className="text-gray-400 mt-1">处理和跟踪所有订单</p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
-        >
-          + 添加订单
-        </button>
-      </div>
-
       {/* Search Bar */}
-      <div className="mb-6">
-        <div className="relative">
+      <div className="mb-6 flex gap-4">
+        <div className="relative flex-1">
           <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
@@ -175,53 +149,40 @@ export default function AdminOrders() {
             className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
           />
         </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+        >
+          + 添加订单
+        </button>
       </div>
 
       {/* Orders Table */}
-      <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-700">
-            <tr>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">订单号</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">客户信息</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">金额</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">支付方式</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">状态</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">下单时间</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">操作</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700">
-            {loading ? (
+      {loading ? (
+        <div className="text-center py-12 text-gray-400">加载中...</div>
+      ) : filteredOrders.length === 0 ? (
+        <div className="text-center py-12 text-gray-400">
+          {searchQuery ? "没有找到匹配的订单" : "该用户暂无订单"}
+        </div>
+      ) : (
+        <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-700">
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
-                  加载中...
-                </td>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">订单号</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">收货人</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">金额</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">状态</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">下单时间</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">操作</th>
               </tr>
-            ) : filteredOrders.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
-                  {searchQuery ? "没有找到匹配的订单" : "暂无订单"}
-                </td>
-              </tr>
-            ) : (
-              filteredOrders.map((order) => (
+            </thead>
+            <tbody className="divide-y divide-gray-700">
+              {filteredOrders.map((order) => (
                 <tr key={order.id} className="hover:bg-gray-700/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="font-mono text-white">{order.orderNumber}</div>
-                    <div className="text-xs text-gray-400">{order._count.items} 件商品</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-white">{order.receiverName}</div>
-                    <div className="text-sm text-gray-400">{order.receiverPhone}</div>
-                    <div className="text-xs text-gray-500">{order.receiverAddress}</div>
-                  </td>
-                  <td className="px-6 py-4 text-white font-bold">
-                    ¥{order.totalAmount.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 text-gray-400">
-                    {getPaymentLabel(order.paymentMethod)}
-                  </td>
+                  <td className="px-6 py-4 text-white">{order.orderNumber}</td>
+                  <td className="px-6 py-4 text-gray-300">{order.receiverName}</td>
+                  <td className="px-6 py-4 text-white">¥{order.totalAmount.toFixed(2)}</td>
                   <td className="px-6 py-4">
                     <span
                       className={`px-3 py-1 text-xs rounded-full border ${getStatusColor(order.status)}`}
@@ -230,13 +191,16 @@ export default function AdminOrders() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-gray-400 text-sm">
-                    {new Date(order.createdAt).toLocaleString("zh-CN")}
+                    {new Date(order.createdAt).toLocaleDateString("zh-CN")}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <select
                         value={order.status}
-                        onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                        onChange={(e) => {
+                          const newStatus = e.target.value;
+                          // Update order status logic here if needed
+                        }}
                         className="bg-gray-700 border border-gray-600 rounded px-3 py-1 text-sm text-white focus:outline-none focus:border-purple-500"
                       >
                         <option value="pending">待处理</option>
@@ -254,11 +218,11 @@ export default function AdminOrders() {
                     </div>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Create Order Modal */}
       {showCreateModal && (
@@ -267,7 +231,7 @@ export default function AdminOrders() {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
             const data = {
-              userId: formData.get('userId') as string,
+              userId: userId,
               items: [],
               receiverName: formData.get('receiverName') as string,
               receiverPhone: formData.get('receiverPhone') as string,
@@ -278,48 +242,27 @@ export default function AdminOrders() {
             handleCreateOrder(data);
           }} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              {/* User Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">用户</label>
-                <select name="userId" className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white" required>
-                  <option value="">选择用户</option>
-                  {users.map(user => (
-                    <option key={user.id} value={user.id}>
-                      {user.name || user.email}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Receiver Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">收货人</label>
                 <input type="text" name="receiverName" required className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white" />
               </div>
-
-              {/* Receiver Phone */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">联系电话</label>
                 <input type="tel" name="receiverPhone" required className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white" />
               </div>
-
-              {/* Payment Method */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">支付方式</label>
-                <select name="paymentMethod" className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white" required>
-                  <option value="wechat">微信支付</option>
-                  <option value="alipay">支付宝</option>
-                  <option value="credits">积分支付</option>
-                </select>
-              </div>
             </div>
-
-            {/* Address */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">收货地址</label>
               <input type="text" name="receiverAddress" required className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white" />
             </div>
-
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">支付方式</label>
+              <select name="paymentMethod" className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white" required>
+                <option value="wechat">微信支付</option>
+                <option value="alipay">支付宝</option>
+                <option value="credits">积分支付</option>
+              </select>
+            </div>
             <button type="submit" className="w-full px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded">创建订单</button>
           </form>
         </Modal>

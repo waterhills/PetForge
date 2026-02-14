@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { SearchIcon } from "@/components/ui/icons";
 import api from "@/lib/api";
 
@@ -18,6 +19,7 @@ interface User {
 }
 
 export default function AdminUsers() {
+  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -95,7 +97,11 @@ export default function AdminUsers() {
               </tr>
             ) : (
               filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-700/50 transition-colors">
+                <tr
+                  key={user.id}
+                  className="hover:bg-gray-700/50 transition-colors cursor-pointer"
+                  onClick={() => router.push(`/admin/users/${user.id}`)}
+                >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold">
@@ -123,10 +129,24 @@ export default function AdminUsers() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <button className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors">
+                      <button
+                        className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Edit action (placeholder)
+                          console.log("Edit user:", user.id);
+                        }}
+                      >
                         编辑
                       </button>
-                      <button className="px-3 py-1 text-sm bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors">
+                      <button
+                        className="px-3 py-1 text-sm bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Delete action (placeholder)
+                          console.log("Delete user:", user.id);
+                        }}
+                      >
                         删除
                       </button>
                     </div>

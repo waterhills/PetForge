@@ -1,8 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { SearchIcon } from "@/components/ui/icons";
 import api from "@/lib/api";
+import UserFilter from "@/components/admin/UserFilter";
+import FilterStatus from "@/components/admin/FilterStatus";
+import Modal from "@/components/admin/Modal";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import PetIPForm from "@/components/admin/PetIPForm";
+import Toast from "@/components/admin/Toast";
+import type { User } from "@/types/admin";
 
 interface PetIP {
   id: string;
@@ -12,6 +19,7 @@ interface PetIP {
   likes: number;
   isPublic: boolean;
   createdAt: string;
+  userId: string;
   user: {
     name: string | null;
     email: string;
@@ -19,31 +27,69 @@ interface PetIP {
 }
 
 export default function AdminPetIPs() {
+  const [users, setUsers] = useState<User[]>([]);
   const [petIPs, setPetIPs] = useState<PetIP[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState({
+    users: true,
+    petIPs: true,
+  });
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingPetIP, setEditingPetIP] = useState<PetIP | null>(null);
+  const [deletingPetIPId, setDeletingPetIPId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
-    fetchPetIPs();
+    fetchData();
   }, []);
 
-  const fetchPetIPs = async () => {
+  const fetchData = async () => {
+    setLoading(prev => ({ ...prev, users: true, petIPs: true }));
     try {
-      const result = await api.getAllPetIPs();
-      if (result.success) {
-        setPetIPs(result.data);
+      const [usersResult, petIPsResult] = await Promise.all([
+        api.getAllUsers(),
+        api.getAllPetIPs(),
+      ]);
+
+      if (usersResult.success) {
+        setUsers(usersResult.data);
+      }
+      if (petIPsResult.success) {
+        setPetIPs(petIPsResult.data);
       }
     } catch (error) {
-      console.error("Failed to fetch PetIPs:", error);
+      console.error("Failed to fetch data:", error);
     } finally {
-      setLoading(false);
+      setLoading(prev => ({ ...prev, users: false, petIPs: false }));
     }
   };
 
-  const filteredPetIPs = petIPs.filter((petIP) =>
-    petIP.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    petIP.style.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPetIPs = useMemo(() => {
+    let result = petIPs;
+
+    // Filter by selected user
+    if (selectedUserId) {
+      result = result.filter((ip) => ip.userId === selectedUserId);
+    }
+
+    // Apply search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (ip) =>
+          ip.name.toLowerCase().includes(query) ||
+          ip.style?.toLowerCase().includes(query)
+      );
+    }
+
+    return result;
+  }, [petIPs, selectedUserId, searchQuery]);
+
+  const handleClearFilter = () => {
+    setSelectedUserId(null);
+    setSearchQuery("");
+  };
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
@@ -68,6 +114,58 @@ export default function AdminPetIPs() {
     return labels[rarity] || rarity;
   };
 
+  const handleCreatePetIP = async (data: any) => {
+    try {
+      const result = await api.adminCreatePetIP(data);
+      if (result.success) {
+        setToast({ message: 'PetIP创建成功', type: 'success' });
+        setShowCreateModal(false);
+        fetchData();
+      } else {
+        setToast({ message: result.error || '创建失败', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Create PetIP error:', error);
+      setToast({ message: '创建失败', type: 'error' });
+    }
+  };
+
+  const handleEditPetIP = async (data: any) => {
+    if (!editingPetIP) return;
+
+    try {
+      const result = await api.updatePetIP(editingPetIP.id, data);
+      if (result.success) {
+        setToast({ message: 'PetIP更新成功', type: 'success' });
+        setEditingPetIP(null);
+        fetchData();
+      } else {
+        setToast({ message: result.error || '更新失败', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Update PetIP error:', error);
+      setToast({ message: '更新失败', type: 'error' });
+    }
+  };
+
+  const handleDeletePetIP = async () => {
+    if (!deletingPetIPId) return;
+
+    try {
+      const result = await api.deletePetIP(deletingPetIPId);
+      if (result.success) {
+        setToast({ message: 'PetIP删除成功', type: 'success' });
+        setDeletingPetIPId(null);
+        fetchData();
+      } else {
+        setToast({ message: result.error || '删除失败', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Delete PetIP error:', error);
+      setToast({ message: '删除失败', type: 'error' });
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -75,24 +173,51 @@ export default function AdminPetIPs() {
           <h1 className="text-3xl font-bold text-white">宠物IP管理</h1>
           <p className="text-gray-400 mt-1">管理所有AI生成的宠物IP</p>
         </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+        >
+          + 添加PetIP
+        </button>
       </div>
 
-      {/* Search Bar */}
-      <div className="mb-6">
-        <div className="relative">
-          <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="搜索宠物名称或风格..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+      {/* User Filter and Search Bar */}
+      <div className="mb-6 flex flex-col md:flex-row gap-4">
+        {/* User Filter */}
+        <div className="w-full md:w-64">
+          <UserFilter
+            users={users}
+            selectedUserId={selectedUserId}
+            onUserSelect={setSelectedUserId}
+            loading={loading.users}
           />
+        </div>
+
+        {/* Search Bar */}
+        <div className="flex-1">
+          <div className="relative">
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="搜索宠物名称或风格..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+            />
+          </div>
         </div>
       </div>
 
+      {/* Filter Status */}
+      <FilterStatus
+        selectedUser={users.find((u) => u.id === selectedUserId) || null}
+        filteredCount={filteredPetIPs.length}
+        totalCount={petIPs.length}
+        onClear={handleClearFilter}
+      />
+
       {/* PetIPs Grid */}
-      {loading ? (
+      {loading.users || loading.petIPs ? (
         <div className="text-center py-12 text-gray-400">加载中...</div>
       ) : filteredPetIPs.length === 0 ? (
         <div className="text-center py-12 text-gray-400">
@@ -133,10 +258,16 @@ export default function AdminPetIPs() {
                   <button className="flex-1 px-3 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors">
                     查看
                   </button>
-                  <button className="flex-1 px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors">
+                  <button
+                    onClick={() => setEditingPetIP(petIP)}
+                    className="flex-1 px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+                  >
                     编辑
                   </button>
-                  <button className="px-3 py-2 text-sm bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors">
+                  <button
+                    onClick={() => setDeletingPetIPId(petIP.id)}
+                    className="px-3 py-2 text-sm bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors"
+                  >
                     删除
                   </button>
                 </div>
@@ -144,6 +275,48 @@ export default function AdminPetIPs() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Create PetIP Modal */}
+      {showCreateModal && (
+        <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="添加PetIP">
+          <PetIPForm onSubmit={handleCreatePetIP} />
+        </Modal>
+      )}
+
+      {/* Edit PetIP Modal */}
+      {editingPetIP && (
+        <Modal isOpen={!!editingPetIP} onClose={() => setEditingPetIP(null)} title="编辑PetIP">
+          <PetIPForm
+            initialData={{
+              name: editingPetIP.name,
+              style: editingPetIP.style,
+              rarity: editingPetIP.rarity,
+            }}
+            onSubmit={handleEditPetIP}
+            submitLabel="更新"
+          />
+        </Modal>
+      )}
+
+      {/* Delete Confirmation */}
+      {deletingPetIPId && (
+        <ConfirmDialog
+          isOpen={!!deletingPetIPId}
+          onClose={() => setDeletingPetIPId(null)}
+          onConfirm={handleDeletePetIP}
+          title="确认删除"
+          message="确定要删除这个PetIP吗？此操作不可撤销。"
+        />
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );

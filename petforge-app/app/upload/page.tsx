@@ -216,6 +216,17 @@ export default function UploadPage() {
           progress = 0;
         }
 
+        // 生成完成且有结果URL时，直接跳转，不更新为completed状态（避免完成弹窗短暂闪烁）
+        if (status === 'completed' && data.resultUrl) {
+          if (pollInterval) {
+            clearInterval(pollInterval);
+            setPollInterval(null);
+          }
+          setIsGenerating(false);
+          await handleCreatePetIPAndNavigate(data.resultUrl);
+          return;
+        }
+
         setGenerationStatus({
           status,
           progress,
@@ -223,19 +234,13 @@ export default function UploadPage() {
           result: data,
         });
 
-        // 如果完成，停止轮询
+        // 失败或无resultUrl的完成，停止轮询
         if (status === 'completed' || status === 'failed') {
           if (pollInterval) {
             clearInterval(pollInterval);
             setPollInterval(null);
           }
           setIsGenerating(false);
-
-          // 如果生成成功，创建PetIP并跳转到资产页面
-          if (status === 'completed' && data.resultUrl) {
-            await handleCreatePetIPAndNavigate(data.resultUrl);
-            return; // 添加 return 防止继续执行
-          }
         }
       }
     } catch (error) {
@@ -342,12 +347,6 @@ export default function UploadPage() {
     });
   };
 
-  // 下载结果
-  const handleDownloadResult = () => {
-    if (generationStatus.result?.resultUrl) {
-      window.open(generationStatus.result.resultUrl, '_blank');
-    }
-  };
 
   // 创建PetIP并跳转到展示页面
   const handleCreatePetIPAndNavigate = async (resultImageUrl: string) => {
@@ -468,7 +467,7 @@ export default function UploadPage() {
             >
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
                 <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-neon-blue/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+                <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-neon-blue/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
               </div>
               <div className="relative z-10 flex flex-col items-center">
                 {previewUrl ? (
@@ -536,11 +535,10 @@ export default function UploadPage() {
                 <button
                   key={type.id}
                   onClick={() => setSelectedType(type.id as any)}
-                  className={`relative p-4 rounded-xl border-2 transition-all ${
-                    selectedType === type.id
-                      ? 'border-primary bg-primary/10 ring-2 ring-primary/50'
-                      : 'border-white/10 bg-white/5 hover:border-primary/30'
-                  }`}
+                  className={`relative p-4 rounded-xl border-2 transition-all ${selectedType === type.id
+                    ? 'border-primary bg-primary/10 ring-2 ring-primary/50'
+                    : 'border-white/10 bg-white/5 hover:border-primary/30'
+                    }`}
                   disabled={isGenerating}
                 >
                   <div className="text-center">
@@ -630,9 +628,8 @@ export default function UploadPage() {
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating || !uploadedFile}
-                className={`w-full bg-gradient-to-r from-primary-dark to-primary hover:from-primary hover:to-primary-light text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(140,43,238,0.3)] hover:shadow-[0_0_35px_rgba(140,43,238,0.5)] transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 text-lg border border-white/10 group ${
-                  isGenerating || !uploadedFile ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                className={`w-full bg-gradient-to-r from-primary-dark to-primary hover:from-primary hover:to-primary-light text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(140,43,238,0.3)] hover:shadow-[0_0_35px_rgba(140,43,238,0.5)] transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 text-lg border border-white/10 group ${isGenerating || !uploadedFile ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
               >
                 {isGenerating ? (
                   <>
@@ -672,7 +669,7 @@ export default function UploadPage() {
                   <div className="absolute inset-0 rounded-full border-4 border-primary/20"></div>
                   <div
                     className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin"
-                    style={{animationDuration: '1s'}}
+                    style={{ animationDuration: '1s' }}
                   ></div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-3xl font-bold text-white">{Math.round(generationStatus.progress)}%</span>
@@ -689,48 +686,6 @@ export default function UploadPage() {
               </div>
             )}
 
-            {generationStatus.status === 'completed' && generationStatus.result && (
-              <div className="relative z-10">
-                <div className="text-center mb-6">
-                  <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">生成完成！</h3>
-                  <p className="text-sm text-gray-400">您的宠物 IP 已成功生成</p>
-                </div>
-
-                {generationStatus.result.resultUrl && (
-                  <div className="aspect-square bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl overflow-hidden border-2 border-primary mb-6">
-                    <img
-                      src={generationStatus.result.resultUrl}
-                      alt="Generated Result"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={handleDownloadResult}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-medium transition-all shadow-neon"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M4 16l4-4m0 0l4 4m-4-4v12" />
-                    </svg>
-                    <span>下载</span>
-                  </button>
-                  <button
-                    onClick={handleRegenerate}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-white/10 hover:bg-white/20 text-gray-200 border border-white/20 rounded-xl font-medium transition-all"
-                  >
-                    <RefreshIcon className="w-5 h-5" />
-                    <span>重新生成</span>
-                  </button>
-                </div>
-              </div>
-            )}
 
             {generationStatus.status === 'failed' && (
               <div className="relative z-10 text-center">
