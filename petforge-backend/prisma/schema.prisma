@@ -23,6 +23,13 @@ model User {
   credits          Int                @default(100)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
+
+  // 设备指纹和安全相关
+  deviceFingerprint String?
+  lastLoginIp       String?
+  lastLoginUserAgent String?
+  lastLoginAt        DateTime?
+
   orders           Order[]
   petIPs           PetIP[]
   cartItems        CartItem[]

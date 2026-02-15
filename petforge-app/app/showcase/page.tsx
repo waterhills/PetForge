@@ -17,6 +17,7 @@ import {
   DownloadIcon,
 } from "@/components/ui/icons";
 import { useCartStore } from "@/store/cartStore";
+import { useAuthStore } from "@/store/authStore";
 import api from "@/lib/api";
 import Navigation from "@/components/layout/Navigation";
 
@@ -25,7 +26,9 @@ function ShowcaseContent() {
   const searchParams = useSearchParams();
   const petId = searchParams.get("petId");
   const { addItem } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
 
+  // All state hooks must be declared before early return
   const [selectedProduct, setSelectedProduct] = useState("figurine");
   const [selectedSize, setSelectedSize] = useState("medium");
   const [selectedBase, setSelectedBase] = useState("black");
@@ -34,7 +37,6 @@ function ShowcaseContent() {
   const [userPetIPs, setUserPetIPs] = useState<any[]>([]);
   const [selectedPetIP, setSelectedPetIP] = useState<any>(null);
   const [isLoadingPetIPs, setIsLoadingPetIPs] = useState(false);
-  const [authError, setAuthError] = useState(false);
 
   const [petIP, setPetIP] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,8 +45,13 @@ function ShowcaseContent() {
   // Track last loaded petId to prevent redundant fetches
   const lastLoadedPetId = useRef<string | null>(null);
 
-  // Load user's PetIPs and current pet IP
+  // Load user's PetIPs and current pet IP (must be before early return)
   useEffect(() => {
+    // Skip if not authenticated
+    if (!isAuthenticated) {
+      return;
+    }
+
     // Skip if we already loaded for this petId
     const currentPetId = petId || 'none';
     if (lastLoadedPetId.current === currentPetId) {
@@ -57,7 +64,6 @@ function ShowcaseContent() {
     const loadUserPetIPs = async () => {
       try {
         setIsLoadingPetIPs(true);
-        setAuthError(false); // Reset auth error before trying
         console.log('Loading user PetIPs...');
 
         const result = await api.getPetIPs({
@@ -90,10 +96,6 @@ function ShowcaseContent() {
         }
       } catch (error: any) {
         console.error('Failed to load user PetIPs:', error);
-        // Check if it's an authentication error
-        if (error.message === 'Access token required' || error.message === 'Authentication required to access your PetIPs' || error.message?.includes('401')) {
-          setAuthError(true);
-        }
         setPetIP(null);
       } finally {
         setIsLoadingPetIPs(false);
@@ -102,7 +104,41 @@ function ShowcaseContent() {
 
     // Load data on mount
     loadUserPetIPs();
-  }, [petId]); // Only run when petId changes
+  }, [petId, isAuthenticated]); // Only run when petId or authentication changes
+
+  // 如果未登录，显示登录提示界面 (must be after all hooks)
+  if (!isAuthenticated) {
+    return (
+      <div className="bg-background-dark text-gray-100 font-display h-screen overflow-hidden flex flex-col">
+        <Navigation />
+        <main className="flex-1 flex items-center justify-center pt-20">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
+              <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">需要登录</h2>
+            <p className="text-gray-400 mb-8">请登录后查看您的IP形象资产</p>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => router.push('/login')}
+                className="px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-purple-600 hover:from-primary/80 hover:to-purple-600/80 text-white font-bold transition-all transform hover:scale-105 shadow-lg shadow-primary/30"
+              >
+                去登录
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="px-8 py-3 rounded-xl border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 font-bold transition-all"
+              >
+                返回首页
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   const products = [
     {
@@ -191,40 +227,6 @@ function ShowcaseContent() {
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-400">加载中...</p>
         </div>
-      </div>
-    );
-  }
-
-  // Show auth error if not logged in
-  if (authError) {
-    return (
-      <div className="bg-background-dark text-gray-100 font-display h-screen overflow-hidden flex flex-col">
-        <Navigation />
-        <main className="flex-1 flex items-center justify-center pt-20">
-          <div className="text-center max-w-md">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
-              <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-3">需要登录</h2>
-            <p className="text-gray-400 mb-8">请登录后查看您的IP形象资产</p>
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => router.push('/login')}
-                className="px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-purple-600 hover:from-primary/80 hover:to-purple-600/80 text-white font-bold transition-all transform hover:scale-105 shadow-lg shadow-primary/30"
-              >
-                去登录
-              </button>
-              <button
-                onClick={() => router.push('/')}
-                className="px-8 py-3 rounded-xl border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 font-bold transition-all"
-              >
-                返回首页
-              </button>
-            </div>
-          </div>
-        </main>
       </div>
     );
   }

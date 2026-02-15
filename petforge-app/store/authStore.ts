@@ -91,10 +91,16 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         })
       }
     } catch (error: any) {
+      // 处理双重认证错误
       set({
         isLoading: false,
         error: error.message || '登录失败，请稍后重试',
       })
+
+      // 如果是会话过期错误，清除所有状态
+      if (error.message && error.message.includes('Session expired')) {
+        get().logout()
+      }
     }
   },
 
@@ -169,7 +175,15 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
   },
 
-  logout: () => {
+  logout: async () => {
+    try {
+      // Call backend logout endpoint to clear httpOnly cookie
+      await api.logout()
+    } catch (error) {
+      console.error('Backend logout failed:', error)
+      // Continue with local cleanup even if backend call fails
+    }
+
     // Clear state
     set({
       user: null,
@@ -177,6 +191,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       isAuthenticated: false,
       error: null,
     })
+
+    // Clear token from API client
+    api.clearToken()
 
     // Clear localStorage
     if (typeof window !== 'undefined') {

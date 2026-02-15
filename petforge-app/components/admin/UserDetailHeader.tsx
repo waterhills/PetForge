@@ -18,9 +18,10 @@ export default function UserDetailHeader({ user, onBack, onEdit }: UserDetailHea
   const [editValue, setEditValue] = useState(user.credits.toString());
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  const handleEditCredits = async () => {
+  const handleEditCredits = async (newCredits?: number) => {
     try {
-      const result = await api.updateUserCredits(user.id, parseInt(editValue));
+      const creditsToUpdate = newCredits !== undefined ? newCredits : parseInt(editValue);
+      const result = await api.updateUserCredits(user.id, creditsToUpdate);
       if (result.success) {
         setToast({ message: '积分修改成功', type: 'success' });
         setShowEditModal(false);
@@ -110,7 +111,7 @@ export default function UserDetailHeader({ user, onBack, onEdit }: UserDetailHea
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
             const newCredits = parseInt(formData.get('credits') as string);
-            handleEditCredits();
+            handleEditCredits(newCredits);
           }} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">积分</label>

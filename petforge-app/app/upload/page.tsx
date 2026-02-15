@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/icons";
 import api from "@/lib/api";
 import Navigation from "@/components/layout/Navigation";
+import { useAuthStore } from "@/store/authStore";
 
 // 风格选项
 const STYLES = [
@@ -78,6 +79,7 @@ const GENERATION_TYPES = [
 
 export default function UploadPage() {
   const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
 
   // 状态管理
   const [selectedStyle, setSelectedStyle] = useState("pixar");
@@ -111,7 +113,7 @@ export default function UploadPage() {
 
   const [pollInterval, setPollInterval] = useState<ReturnType<typeof setInterval> | null>(null);
 
-  // 文件选择处理
+  // 文件选择处理 (must be before early return)
   const handleFileSelect = useCallback((file: File) => {
     if (file && file.size <= 10 * 1024 * 1024) {
       setUploadedFile(file);
@@ -171,11 +173,43 @@ export default function UploadPage() {
       // Get token from localStorage directly
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
 
+      // Get CSRF token
+      const getCSRFToken = () => {
+        if (typeof window !== 'undefined') {
+          const cookieToken = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('csrf_token='))
+            ?.split('=')[1];
+          if (cookieToken) return cookieToken;
+          return localStorage.getItem('csrf_token') || '';
+        }
+        return '';
+      };
+
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      // Add CSRF token for POST request
+      const csrfToken = getCSRFToken();
+      if (csrfToken) {
+        headers['X-CSRF-Token'] = csrfToken;
+        console.log('[Upload] Sending POST to /api/upload-image with CSRF token');
+      } else {
+        console.warn('[Upload] WARNING: POST to /api/upload-image has NO CSRF token');
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/upload-image`, {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers,
         body: formData,
       });
+
+      // Update CSRF token from response headers
+      const newCSRFToken = response.headers.get('X-CSRF-Token');
+      if (newCSRFToken && typeof window !== 'undefined') {
+        console.log('[Upload] Received new CSRF token from response');
+        localStorage.setItem('csrf_token', newCSRFToken);
+      }
 
       if (!response.ok) {
         console.error('Upload failed:', response.statusText);
@@ -403,6 +437,40 @@ export default function UploadPage() {
       localStorage.setItem('petforge_pet_name', petName.trim());
     }
   }, [petName]);
+
+  // 如果未登录，显示登录提示界面 (must be after all hooks)
+  if (!isAuthenticated) {
+    return (
+      <div className="bg-background-dark text-gray-100 font-display h-screen overflow-hidden flex flex-col">
+        <Navigation />
+        <main className="flex-1 flex items-center justify-center pt-20">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
+              <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">需要登录</h2>
+            <p className="text-gray-400 mb-8">请登录后创建您的专属宠物IP形象</p>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => router.push('/login')}
+                className="px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-purple-600 hover:from-primary/80 hover:to-purple-600/80 text-white font-bold transition-all transform hover:scale-105 shadow-lg shadow-primary/30"
+              >
+                去登录
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="px-8 py-3 rounded-xl border border-white/10 text-gray-300 hover:text-white hover:bg-white/5 font-bold transition-all"
+              >
+                返回首页
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden text-slate-200">

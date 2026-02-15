@@ -10,6 +10,8 @@ import GenerationSocketServer from './websocket/generationSocket.js';
 import { generalLimiter, authLimiter, paymentLimiter, uploadLimiter } from './middleware/rateLimiter.js';
 import { validateEnv } from './utils/env.js';
 import { requestId } from './middleware/requestId.js';
+import { deviceFingerprint } from './middleware/deviceFingerprint.js';
+import { setCSRFToken, csrfProtection } from './middleware/csrf.js';
 
 dotenv.config();
 
@@ -32,6 +34,7 @@ app.use(requestId);
 app.use(cors({
   origin: process.env.CORS_ORIGIN?.split(',') || [process.env.FRONTEND_URL].filter(Boolean),
   credentials: true,
+  exposedHeaders: ['X-CSRF-Token'],  // Expose CSRF token to frontend
 }));
 
 // Security headers with helmet
@@ -64,6 +67,13 @@ app.use(helmet({
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Device fingerprint middleware (must be before routes)
+app.use(deviceFingerprint);
+
+// CSRF token 设置和验证
+app.use(setCSRFToken);
+app.use('/api/', csrfProtection);
 
 // Rate limiting
 app.use('/api/', generalLimiter);

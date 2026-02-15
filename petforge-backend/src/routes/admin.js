@@ -230,6 +230,65 @@ router.get('/users/:id', authMiddleware, requirePermission('users.view'), async 
   }
 });
 
+// Update user credits - requires users.edit permission
+router.patch('/users/:userId/credits', authMiddleware, requirePermission('users.edit'), async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { credits } = req.body;
+
+    // Validation
+    if (typeof credits !== 'number' || credits < 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Credits must be a non-negative number',
+      });
+    }
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        credits: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found',
+      });
+    }
+
+    // Update user credits
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { credits },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        credits: true,
+        avatar: true,
+      },
+    });
+
+    res.json({
+      success: true,
+      data: updatedUser,
+      message: `User credits updated to ${credits}`,
+    });
+  } catch (error) {
+    console.error('Update user credits error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update user credits',
+    });
+  }
+});
+
 // Get all PetIPs - requires petips.view permission
 router.get('/petips', authMiddleware, requirePermission('petips.view'), async (req, res) => {
   try {

@@ -14,22 +14,42 @@ class ApiClient {
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
-    // Note: Token is now stored in httpOnly cookie by backend
-    // No need to load from localStorage
+    // Load token from localStorage if available (fallback for when cookies fail)
+    if (typeof window !== 'undefined') {
+      this.token = localStorage.getItem('auth_token');
+      // Initialize CSRF token on client side (fire and forget)
+      this.initializeCSRFToken().catch(err => console.error('[CSRF] Init failed:', err));
+    }
+  }
+
+  // Initialize CSRF token by making a GET request
+  private async initializeCSRFToken(): Promise<void> {
+    try {
+      const response = await fetch(`${this.baseUrl}/health`, {
+        credentials: 'include',
+      });
+      const csrfToken = response.headers.get('X-CSRF-Token');
+      if (csrfToken) {
+        console.log('[CSRF] Initialized CSRF token from /health endpoint');
+        localStorage.setItem('csrf_token', csrfToken);
+      }
+    } catch (error) {
+      console.warn('[CSRF] Failed to initialize CSRF token:', error);
+    }
   }
 
   setToken(token: string) {
-    // DEPRECATED: Token is now stored in httpOnly cookie by backend
-    // This method is kept for backward compatibility but does nothing
-    console.warn('[DEPRECATED] setToken is no longer needed. Token is stored in httpOnly cookie.');
-    // Cookies are automatically handled by browser with credentials: 'include'
+    this.token = token;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+    }
   }
 
   clearToken() {
-    // DEPRECATED: Token is now stored in httpOnly cookie by backend
-    // This method is kept for backward compatibility but does nothing
-    console.warn('[DEPRECATED] clearToken is no longer needed. Use logout API endpoint instead.');
-    // Cookies are automatically handled by browser
+    this.token = null;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+    }
   }
 
   private getHeaders(includeAuth = false): HeadersInit {
@@ -37,12 +57,11 @@ class ApiClient {
       'Content-Type': 'application/json',
     };
 
-    // CRITICAL: Use credentials: 'include' to send httpOnly cookies
-    // This is safer than manual Authorization header
-    // Backend cookie will be sent automatically by browser
-    if (includeAuth) {
-      // Include auth if needed (e.g., for server-side calls)
-      // But for browser-to-API calls, cookies are sent automatically
+    // Add Authorization header if token exists (fallback for cookies)
+    // Note: httpOnly cookie is sent automatically via credentials: 'include'
+    if (this.token) {
+      // @ts-ignore - HeadersInit type allows string keys
+      headers['Authorization'] = `Bearer ${this.token}`;
     }
 
     return headers;
@@ -54,20 +73,84 @@ class ApiClient {
     includeAuth = false
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+
+    // Check if token exists for authenticated endpoints
+    if (includeAuth && !this.token) {
+      throw new Error('Authentication required. Please login again.');
+    }
+
     const config: RequestInit = {
       ...options,
       headers: {
-        ...this.getHeaders(includeAuth),
+        'Content-Type': 'application/json',
+        ...(this.token ? { 'Authorization': `Bearer ${this.token}` } : {}),
+        // Add CSRF token for state-changing operations
+        ...(['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method || 'GET')
+          ? { 'X-CSRF-Token': this.getCSRFToken() || '' }
+          : {}),
         ...options.headers,
       },
-      // CRITICAL: Include cookies for httpOnly cookie authentication
       credentials: 'include',
     };
 
+    // Log CSRF token for state-changing operations
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method || 'GET')) {
+      const csrfToken = (config.headers as any)['X-CSRF-Token'];
+      if (csrfToken) {
+        console.log(`[CSRF] Sending ${options.method} request to ${endpoint} with CSRF token`);
+      } else {
+        console.warn(`[CSRF] WARNING: ${options.method} request to ${endpoint} has NO CSRF token`);
+      }
+    }
+
     const response = await fetch(url, config);
+
+    // Update CSRF token from response headers (if present)
+    if (typeof window !== 'undefined') {
+      const newCSRFToken = response.headers.get('X-CSRF-Token');
+      if (newCSRFToken) {
+        console.log('[CSRF] Received new CSRF token from response header');
+        localStorage.setItem('csrf_token', newCSRFToken);
+      }
+    }
+
     const data = await response.json();
 
     if (!response.ok) {
+      // Handle dual authentication errors
+      const errorCode = (data as any).code;
+
+      if (errorCode === 'DUAL_AUTH_MISSING' ||
+          errorCode === 'DUAL_AUTH_MISMATCH' ||
+          errorCode === 'DUAL_AUTH_INVALID' ||
+          errorCode === 'DEVICE_MISMATCH') {
+        // Clear local token
+        this.clearToken();
+        throw new Error('Session expired. Please login again.');
+      }
+
+      // Handle CSRF errors
+      if (errorCode === 'CSRF_INVALID') {
+        console.warn('CSRF token invalid, refreshing and retrying...');
+        // Refresh CSRF token and retry once
+        await this.refreshCSRFToken();
+        const retryConfig = {
+          ...config,
+          headers: {
+            ...config.headers,
+            'X-CSRF-Token': this.getCSRFToken() || '',
+          },
+        };
+        const retryResponse = await fetch(url, retryConfig);
+        const retryData = await retryResponse.json();
+
+        if (!retryResponse.ok) {
+          throw new Error(retryData.error || 'Request failed');
+        }
+
+        return retryData as T;
+      }
+
       // Handle Zod validation errors (array of error objects)
       if (Array.isArray(data.error)) {
         const errorMessages = data.error.map((e: any) => e.message || e).join(', ');
@@ -77,6 +160,60 @@ class ApiClient {
     }
 
     return data;
+  }
+
+  // CSRF token management
+  private getCSRFToken(): string {
+    if (typeof window !== 'undefined') {
+      // Try to get from cookie first
+      const cookieToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrf_token='))
+        ?.split('=')[1];
+
+      if (cookieToken) {
+        return cookieToken;
+      }
+
+      // Fallback: try to get from localStorage (cached from response header)
+      const cachedToken = localStorage.getItem('csrf_token');
+      if (cachedToken) {
+        return cachedToken;
+      }
+
+      console.warn('[CSRF] No CSRF token found in cookie or localStorage');
+    }
+    return '';
+  }
+
+  private async refreshCSRFToken(): Promise<void> {
+    if (typeof window !== 'undefined') {
+      try {
+        const response = await fetch(`${this.baseUrl}/health`, {
+          credentials: 'include',
+        });
+
+        // Extract CSRF token from response header
+        const csrfToken = response.headers.get('X-CSRF-Token');
+        if (csrfToken) {
+          console.log('[CSRF] Refreshed CSRF token from /health endpoint');
+          localStorage.setItem('csrf_token', csrfToken);
+        }
+      } catch (error) {
+        console.error('[CSRF] Failed to refresh CSRF token:', error);
+      }
+    }
+  }
+
+  // Public method to manually initialize/refresh CSRF token
+  async ensureCSRFToken(): Promise<void> {
+    const existingToken = this.getCSRFToken();
+    if (existingToken) {
+      console.log('[CSRF] CSRF token already exists');
+      return;
+    }
+    console.log('[CSRF] No CSRF token found, fetching...');
+    await this.initializeCSRFToken();
   }
 
   // Auth endpoints
@@ -95,6 +232,8 @@ class ApiClient {
 
     if (data.success && data.data.token) {
       this.setToken(data.data.token);
+    } else {
+      console.warn('Login successful but no token in response data');
     }
 
     return data;
@@ -102,6 +241,12 @@ class ApiClient {
 
   async getCurrentUser() {
     return this.request('/api/auth/me', {}, true);
+  }
+
+  async logout() {
+    return this.request('/api/auth/logout', {
+      method: 'POST',
+    });
   }
 
   // 添加商品到购物车（旧端点，保留兼容但推荐使用下方完整版 addToCart）

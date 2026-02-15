@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import prisma from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { generateDeviceId } from '../middleware/deviceFingerprint.js';
+import { detectAnomalousLogin, recordLogin } from '../middleware/anomalyDetection.js';
 import { z } from 'zod';
 
 const router = express.Router();
@@ -67,9 +69,17 @@ router.post('/register', async (req, res) => {
       },
     });
 
-    // Generate token with role info
+    // Generate device ID
+    const deviceId = generateDeviceId(req);
+
+    // Generate token with role info and device fingerprint
     const token = jwt.sign(
-      { userId: user.id, email: user.email, roleName: defaultRole?.name || 'user' },
+      {
+        userId: user.id,
+        email: user.email,
+        roleName: defaultRole?.name || 'user',
+        deviceId: deviceId  // 添加设备指纹
+      },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
@@ -83,6 +93,9 @@ router.post('/register', async (req, res) => {
       path: '/',
     });
 
+    // Record login information
+    await recordLogin(user.id, req);
+
     res.status(201).json({
       success: true,
       data: {
@@ -93,6 +106,7 @@ router.post('/register', async (req, res) => {
           avatar: user.avatar,
           credits: user.credits,
         },
+        token,
       },
     });
   } catch (error) {
@@ -151,9 +165,23 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Generate token with role info
+    // Detect anomalous login
+    const anomalyDetection = await detectAnomalousLogin(user.id, req);
+    if (anomalyDetection.anomalous) {
+      console.warn(`[SECURITY] Anomalous login detected for user ${user.id}:`, anomalyDetection.reasons);
+    }
+
+    // Generate device ID
+    const deviceId = generateDeviceId(req);
+
+    // Generate token with role info and device fingerprint
     const token = jwt.sign(
-      { userId: user.id, email: user.email, roleName: user.role?.name || 'user' },
+      {
+        userId: user.id,
+        email: user.email,
+        roleName: user.role?.name || 'user',
+        deviceId: deviceId  // 添加设备指纹
+      },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
@@ -167,6 +195,9 @@ router.post('/login', async (req, res) => {
       path: '/',
     });
 
+    // Record login information
+    await recordLogin(user.id, req);
+
     res.json({
       success: true,
       data: {
@@ -177,6 +208,7 @@ router.post('/login', async (req, res) => {
           avatar: user.avatar,
           credits: user.credits,
         },
+        token,
       },
     });
   } catch (error) {
@@ -256,6 +288,30 @@ router.get('/me', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to get user',
+    });
+  }
+});
+
+// Logout
+router.post('/logout', async (req, res) => {
+  try {
+    // Clear the httpOnly cookie
+    res.clearCookie('auth_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      path: '/',
+    });
+
+    res.json({
+      success: true,
+      message: 'Logged out successfully',
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Logout failed',
     });
   }
 });
